@@ -36,6 +36,7 @@ Data <- cbind(Data1,RESPONSE)
 N0<-length(S0[,1])
 Nw<-10
 p0<-c()
+p1<- c()
 imp<-list()
 SW<-c()
 Predict<-c()
