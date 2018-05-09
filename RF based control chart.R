@@ -8,6 +8,7 @@ library(boot)
 library(gtools) #smartbin
 library(reshape2) #melt
 library(ggplot2)
+library(MASS) #mvnrnd
 
 Train <- read.csv('lumos_training_set.csv')
 Test <- read.csv('lumos_all_set.csv')
@@ -33,39 +34,47 @@ Data <- cbind(Data1,RESPONSE)
 ######################################################
 
 N0<-length(S0[,1])
-Nw<-2
+Nw<-10
 p0<-c()
-p1<-c()
 imp<-list()
-
-for (i in N0+1:length(S0[,1])){
-  SW<-Data[(i-N0):(i+Nw-1-N0),]
+SW<-c()
+Predict<-c()
+nTrees<-c()
+for (i in Nw:length(Data[,1])){
+  SW<-Data[(i-Nw+1):i,]
   Data.model<-rbind(S0,SW)
+  rownames(Data.model)<-1:(N0+Nw)
   Data.model<-Data.model[,-1]
   
-  fit <- train(as.factor(RESPONSE) ~ ., data = Data.model, method="rf",  preProcess = c("center", "scale", "nzv")
-               , trainControl=trainControl( method="oob" ))
+  fit <- train(as.factor(RESPONSE) ~ ., 
+               data = Data.model, 
+               method="rf",
+               preProcess = c("center", "scale", "nzv"),
+               trainControl=trainControl( method="oob" ),  
+               tuneGrid = data.frame(mtry = 6))
   
   Predict<-predict(fit, type='prob')
-  p0[i]<-sum(Predict[,1])/length(S0[,1])
+  nTrees[i]<-fit$finalModel$ntree
+  p1[i]<-sum(Predict[(N0+1):(N0+Nw),2])/Nw
   importance<-varImp(fit)$importance
   imp[[i]]<-t(importance)
-
 }
 
 IMP<-as.data.frame(melt(do.call(smartbind,imp)))
-IMP<-data.frame(c(IMP,rep(1:i,length(importance$Overall))))
+ggplot(data=IMP,aes(y=value, x=1:length(IMP[,1]), color=variable))+geom_area()
 
-plot(p0, type = 'l')
-abline(h = CL,col = "gray60")
+chart.stat<-as.data.frame(cbind(p1,CL))
+ggplot(data=chart.stat,aes(y=p1, x=1:length(chart.stat[,1])))+geom_line()+geom_hline(yintercept=chart.stat$CL)
 
-ggplot(data=IMP,aes(y=value, x=1:340, col=variable))+geom_line
 
 #Simulation 1
 #generate multivariate normal data
 #parameters from a training sample
-n<-10 #incontrol observations 
-m<-10 #ooc observations
+n<-1000 #incontrol observations 
+m<-100 #ooc observations
+Data-c()
+Data1<-c()
+S0<-c()
 #one peptide LVNELTEFAK 
 mean <-c(with(data=Train,tapply(RT,INDEX=PepSeq,FUN=mean))[4],
          with(data=Train,tapply(TotalArea,INDEX=PepSeq,FUN=mean)) [4],
@@ -80,7 +89,7 @@ S0 <- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
 RESPONSE<-c("GO")
 S0 <- cbind(S0,RESPONSE)
 
-Data1<-data.frame(idfile=(1+m):(n+m),PepSeq=rep("LVNELTEFAK",m),mvrnorm(m, mean+3*c(covar[1],covar[2],covar[3],covar[4]), covar))
+Data1<-data.frame(idfile=(n+1):(n+m),PepSeq=rep("LVNELTEFAK",m),mvrnorm(m, mean+(0.5*sqrt(c(covar[1,1],covar[2,2],covar[3,3],covar[4,4]))), covar))
 colnames(Data1)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
 Data1 <- reshape(Data1, idvar = "idfile", timevar = "PepSeq", direction = "wide")
 RESPONSE<-c("NOGO")
