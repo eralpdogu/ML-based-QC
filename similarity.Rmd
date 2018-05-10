@@ -1,0 +1,87 @@
+---
+title: "Similarity"
+author: "Shantam Gupta"
+date: "May 10, 2018"
+output: pdf_document
+---
+
+# Using similarity for Statistical Process Control & Monitoring 
+
+Train data represented as S0(reference data) with N0 as the number of train data points available(entire historical record). Test data represented as Sw(Data) 
+
+#Installing the Package
+```{r}
+#install.packages("lsa")
+library(lsa) # cosine
+#?cosine
+```
+
+#Filtering numeric features
+```{r}
+#makes sure the data is numeric
+sw <- sapply(Data[,c(-1,-50)],as.numeric)
+s0 <- sapply(S0[,c(-1,-50)],as.numeric)
+```
+
+
+# Taking colum means to get the average representative point for train data(s0)
+```{r}
+avg_s0 <- colMeans(s0)
+```
+
+# Finding similarity between train and test data point(Exploration)
+
+## Cosine Similarity
+
+### Train data 
+```{r}
+train_cs <- cosine(t(as.matrix(s0)))
+
+#finding the least similar data points in the matrix
+which(train_cs == min(train_cs), arr.ind = TRUE)
+```
+
+The success for this method is determined by the fact how similarity affects the distribution of the data. Let's look at the distribution of similarity in train data
+```{r}
+library(lattice)
+
+levelplot(train_cs)
+```
+
+let us remove the above rows which have low similarity 
+```{r}
+levelplot(train_cs[-c(66,50),-c(66,50)])
+```
+
+
+
+# Comparing the test data point with all reference data and finding the least similarity
+
+# Plotting some of the values
+```{r}
+min_similarity <- c()
+test_similarity <- data.frame()
+#finding cosine similarity between test data point(sw) and train data(s0)
+for(i in 1:length(sw)){
+  matrix <- as.matrix(rbind(s0,sw[i,]))
+  train_test_i_cs <- cosine(t(as.matrix(rbind(s0,sw[i,]))))
+
+  #taking the last element from the matrix and finding the lowest similarity
+  min_similarity[i] <- min(train_test_i_cs[108,])
+  
+  #storing the similarity of test data points
+  rbind(test_similarity,train_test_i_cs[108,])
+} 
+```
+
+
+```{r}
+levelplot(test_similarity)
+```
+
+
+
+
+
+
+
