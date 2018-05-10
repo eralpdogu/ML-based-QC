@@ -8,7 +8,29 @@ output: pdf_document
 # Using similarity for Statistical Process Control & Monitoring 
 
 Train data represented as S0(reference data) with N0 as the number of train data points available(entire historical record). Test data represented as Sw(Data) 
+```{r}
+Train <- read.csv('lumos_training_set.csv')
+Test <- read.csv('lumos_all_set.csv')
 
+#remove repeated measurements and reshape the dataset
+ind <- which(with( Train, (Train$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carbamidomethyl)AK" | Train$PepSeq=="TC(Carbamidomethyl)VADESHAGC(Carbamidomethyl)EK") ))
+S0<-Train[-ind,]
+S0<-S0[,-2]
+Train<-S0
+S0$PepSeq<- gsub("\\(Carbamidomethyl\\)","",S0$PepSeq)
+S0 <- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+RESPONSE<-c("GO")
+S0 <- cbind(S0,RESPONSE)
+
+ind <- which(with( Test, (Test$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carbamidomethyl)AK" | Test$PepSeq=="TC(Carbamidomethyl)VADESHAGC(Carbamidomethyl)EK") ))
+Data0<-Test[-ind,]
+Data0<-Data0[,-2]
+Data0$PepSeq<- gsub("\\(Carbamidomethyl\\)","",Data0$PepSeq)
+Data1 <- Data0[1:8 + rep(seq(0, nrow(Data0), by=100), each=8),]
+Data1 <- reshape(Data1, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+RESPONSE<-c("NOGO")
+Data <- cbind(Data1,RESPONSE)
+```
 #Installing the Package
 ```{r}
 #install.packages("lsa")
