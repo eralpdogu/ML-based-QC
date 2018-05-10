@@ -62,7 +62,7 @@ levelplot(train_cs[-c(66,50),-c(66,50)])
 min_similarity <- c()
 test_similarity <- data.frame()
 #finding cosine similarity between test data point(sw) and train data(s0)
-for(i in 1:length(sw)){
+for(i in 1:nrow(sw)){
   matrix <- as.matrix(rbind(s0,sw[i,]))
   train_test_i_cs <- cosine(t(as.matrix(rbind(s0,sw[i,]))))
 
