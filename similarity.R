@@ -14,11 +14,15 @@ s0 <- sapply(S0[,c(-1,-50)],as.numeric)
 
 #install.packages("resemble")
 library(resemble) # cosine
-?fDiss
-ed <- fDiss(s0,t(as.data.frame(sw[1,])), method = "cosine",center = F, scaled = F)
+#?fDiss
 
+#take the average representative point of train data 
+avg_s0 <- colMeans(s0)
 
+#finding cosine similarity between test data and train data points
+fDiss(s0,t(as.data.frame(sw[1,])), method = "cosine",center = F, scaled = F)
 
+fDiss(s0,t(as.data.frame(sw[1,])), method = "cosine",center = F, scaled = F)
 
 
 #takes a sample of test data on find simlarity on real time basis
