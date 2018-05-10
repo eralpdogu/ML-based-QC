@@ -92,16 +92,19 @@ for(i in 1:nrow(sw)){
   min_similarity[i] <- min(train_test_i_cs[108,])
   
   #storing the similarity of test data points
-  rbind(test_similarity,train_test_i_cs[108,])
+  test_similarity <- rbind(test_similarity,train_test_i_cs[108,])
 } 
 ```
 
 
 ```{r}
-levelplot(test_similarity)
+names(test_similarity) <- NULL
+row.names(test_similarity) <- NULL
+levelplot(as.matrix(test_similarity[1:100,]))
 ```
 
-
+The 107 columns represent the similarity with train data(s0). The rows are first 100 test data points. 
+For great results the above matrix should show colors with low similarity value
 
 
 
