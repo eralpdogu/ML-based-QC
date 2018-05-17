@@ -5,12 +5,17 @@ date: "May 13, 2018"
 output: pdf_document
 ---
 
+# Installing the Package
+```{r}
+#install.packages("neuralnet")
+library(neuralnet)
+```
+
+# Load the Data 
 ```{r}
 ```
 
-```{r}
-```
-
+# Preprocess the data: Normalize the data
 ```{r}
 ```
 
