@@ -1,0 +1,497 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Neural Networks},
+            pdfauthor={Shantam Gupta},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Neural Networks}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Shantam Gupta}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{May 13, 2018}
+
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{Installing the Package}\label{installing-the-package}
+
+\section{Load the Data}\label{load-the-data}
+
+\section{Preprocess the data: Normalize the
+data}\label{preprocess-the-data-normalize-the-data}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_data <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(S0,Data)}
+\NormalTok{maxs <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(new_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\KeywordTok{c}\NormalTok{(idfile,RESPONSE)), }\DecValTok{2}\NormalTok{, max) }
+\NormalTok{mins <-}\StringTok{ }\KeywordTok{apply}\NormalTok{(new_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\KeywordTok{c}\NormalTok{(idfile,RESPONSE)), }\DecValTok{2}\NormalTok{, min)}
+
+\NormalTok{scaled_data <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{scale}\NormalTok{(new_data }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\KeywordTok{c}\NormalTok{(idfile,RESPONSE)), }\DataTypeTok{center =}\NormalTok{ mins, }\DataTypeTok{scale =}\NormalTok{ maxs }\OperatorTok{-}\StringTok{ }\NormalTok{mins))}
+\CommentTok{#scaled_data$RESPONSE <- ifelse(new_data$RESPONSE =="GO",1,0)}
+\NormalTok{scaled_data}\OperatorTok{$}\NormalTok{RESPONSE <-}\StringTok{ }\KeywordTok{as.factor}\NormalTok{(new_data}\OperatorTok{$}\NormalTok{RESPONSE)}
+\CommentTok{#scaled_data$RESPONSE <- as.factor(scaled_data$RESPONSE)}
+\NormalTok{scaled_data}\OperatorTok{$}\NormalTok{idfile <-}\StringTok{ }\NormalTok{new_data}\OperatorTok{$}\NormalTok{idfile}
+
+\CommentTok{#select random ind for train and test }
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+
+\NormalTok{## 75% of the sample size}
+\NormalTok{smp_size <-}\StringTok{ }\KeywordTok{floor}\NormalTok{(}\FloatTok{0.75} \OperatorTok{*}\StringTok{ }\KeywordTok{nrow}\NormalTok{(scaled_data))}
+
+\NormalTok{## set the seed to make your partition reproducible}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{train_ind <-}\StringTok{ }\KeywordTok{sample}\NormalTok{(}\KeywordTok{seq_len}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(scaled_data)), }\DataTypeTok{size =}\NormalTok{ smp_size)}
+
+
+\NormalTok{train <-}\StringTok{ }\NormalTok{scaled_data[train_ind,]}
+\NormalTok{test <-}\StringTok{ }\NormalTok{scaled_data[}\OperatorTok{-}\NormalTok{train_ind,]}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Building Neural Network}\label{building-neural-network}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(h2o)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ----------------------------------------------------------------------
+## 
+## Your next step is to start H2O:
+##     > h2o.init()
+## 
+## For H2O package documentation, ask for help:
+##     > ??h2o
+## 
+## After starting H2O, you can use the Web UI at http://localhost:54321
+## For more information visit http://docs.h2o.ai
+## 
+## ----------------------------------------------------------------------
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'h2o'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:stats':
+## 
+##     cor, sd, var
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     %*%, %in%, &&, ||, apply, as.factor, as.numeric, colnames,
+##     colnames<-, ifelse, is.character, is.factor, is.numeric, log,
+##     log10, log1p, log2, round, signif, trunc
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#generate same set of random numbers (for reproducibility)}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{121}\NormalTok{)}
+
+\CommentTok{#launch h2o cluster}
+\NormalTok{localH2O <-}\StringTok{ }\KeywordTok{h2o.init}\NormalTok{(}\DataTypeTok{nthreads =} \OperatorTok{-}\DecValTok{1}\NormalTok{)}
+
+
+\CommentTok{#import r objects to h2o cloud}
+\NormalTok{train_h2o <-}\StringTok{ }\KeywordTok{as.h2o}\NormalTok{(train)}
+\NormalTok{test_h2o <-}\StringTok{ }\KeywordTok{as.h2o}\NormalTok{(test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#build the mlp(multi layer perceptron) deep learning model using h2o}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{100}\NormalTok{)}
+
+\NormalTok{dl_model <-}\StringTok{ }\KeywordTok{h2o.deeplearning}\NormalTok{(}
+  \DataTypeTok{model_id=}\StringTok{"dl_model_first"}\NormalTok{, }
+  \DataTypeTok{training_frame=}\NormalTok{train_h2o, }
+  \DataTypeTok{validation_frame =}\NormalTok{ test_h2o,}
+  \DataTypeTok{x=} \KeywordTok{colnames}\NormalTok{(train_h2o[,}\DecValTok{1}\OperatorTok{:}\DecValTok{48}\NormalTok{]),}
+  \DataTypeTok{y=} \StringTok{"RESPONSE"}\NormalTok{,}
+  \DataTypeTok{activation=}\StringTok{"Rectifier"}\NormalTok{,  }
+  \DataTypeTok{hidden=}\KeywordTok{c}\NormalTok{(}\DecValTok{5}\NormalTok{,}\DecValTok{4}\NormalTok{), }
+  \DataTypeTok{stopping_metric=}\StringTok{"mean_per_class_error"}\NormalTok{,}
+  \DataTypeTok{stopping_tolerance=}\FloatTok{0.01}\NormalTok{,}
+  \DataTypeTok{epochs=}\DecValTok{100}        
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(dl_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Model Details:
+## ==============
+## 
+## H2OBinomialModel: deeplearning
+## Model Key:  dl_model_first 
+## Status of Neuron Layers: predicting RESPONSE, 2-class classification, bernoulli distribution, CrossEntropy loss, 279 weights/biases, 16.2 KB, 105,600 training samples, mini-batch size 1
+##   layer units      type dropout       l1       l2 mean_rate rate_rms
+## 1     1    48     Input  0.00 %                                     
+## 2     2     5 Rectifier  0.00 % 0.000000 0.000000  0.005227 0.004851
+## 3     3     4 Rectifier  0.00 % 0.000000 0.000000  0.004046 0.005787
+## 4     4     2   Softmax         0.000000 0.000000  0.001208 0.000238
+##   momentum mean_weight weight_rms mean_bias bias_rms
+## 1                                                   
+## 2 0.000000   -0.012467   0.246006  0.608905 0.121557
+## 3 0.000000    0.132601   0.830154  1.048259 0.200680
+## 4 0.000000   -0.559657   2.181219  0.005555 0.047890
+## 
+## H2OBinomialMetrics: deeplearning
+## ** Reported on training data. **
+## ** Metrics reported on full training frame **
+## 
+## MSE:  0.007385807
+## RMSE:  0.08594072
+## LogLoss:  0.03213156
+## Mean Per-Class Error:  0.02012779
+## AUC:  0.9974616
+## Gini:  0.9949232
+## 
+## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+##        GO NOGO    Error     Rate
+## GO     80    3 0.036145    =3/83
+## NOGO    4  969 0.004111   =4/973
+## Totals 84  972 0.006629  =7/1056
+## 
+## Maximum Metrics: Maximum metrics at their respective thresholds
+##                         metric threshold    value idx
+## 1                       max f1  0.543928 0.996401 315
+## 2                       max f2  0.446713 0.996302 319
+## 3                 max f0point5  0.711292 0.997519 309
+## 4                 max accuracy  0.543928 0.993371 315
+## 5                max precision  1.000000 1.000000   0
+## 6                   max recall  0.002332 1.000000 399
+## 7              max specificity  1.000000 1.000000   0
+## 8             max absolute_mcc  0.543928 0.954505 315
+## 9   max min_per_class_accuracy  0.790724 0.987952 306
+## 10 max mean_per_class_accuracy  0.711292 0.989865 309
+## 
+## Gains/Lift Table: Extract with `h2o.gainsLift(<model>, <data>)` or `h2o.gainsLift(<model>, valid=<T/F>, xval=<T/F>)`
+## H2OBinomialMetrics: deeplearning
+## ** Reported on validation data. **
+## ** Metrics reported on full validation frame **
+## 
+## MSE:  0.008362441
+## RMSE:  0.09144638
+## LogLoss:  0.02741105
+## Mean Per-Class Error:  0.02083333
+## AUC:  0.9997467
+## Gini:  0.9994934
+## 
+## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+##        GO NOGO    Error    Rate
+## GO     23    1 0.041667   =1/24
+## NOGO    0  329 0.000000  =0/329
+## Totals 23  330 0.002833  =1/353
+## 
+## Maximum Metrics: Maximum metrics at their respective thresholds
+##                         metric threshold    value idx
+## 1                       max f1  0.868842 0.998483 316
+## 2                       max f2  0.868842 0.999392 316
+## 3                 max f0point5  0.919001 0.998778 313
+## 4                 max accuracy  0.868842 0.997167 316
+## 5                max precision  1.000000 1.000000   0
+## 6                   max recall  0.868842 1.000000 316
+## 7              max specificity  1.000000 1.000000   0
+## 8             max absolute_mcc  0.868842 0.977461 316
+## 9   max min_per_class_accuracy  0.919001 0.993921 313
+## 10 max mean_per_class_accuracy  0.919001 0.996960 313
+## 
+## Gains/Lift Table: Extract with `h2o.gainsLift(<model>, <data>)` or `h2o.gainsLift(<model>, valid=<T/F>, xval=<T/F>)`
+## 
+## 
+## Scoring History: 
+##             timestamp   duration training_speed    epochs iterations
+## 1 2018-05-17 20:30:21  0.000 sec                  0.00000          0
+## 2 2018-05-17 20:30:21  0.101 sec 224680 obs/sec  10.00000          1
+## 3 2018-05-17 20:30:21  0.399 sec 324923 obs/sec 100.00000         10
+##         samples training_rmse training_logloss training_auc training_lift
+## 1      0.000000                                                          
+## 2  10560.000000       0.18376          0.11958      0.96312       1.08530
+## 3 105600.000000       0.08594          0.03213      0.99746       1.08530
+##   training_classification_error validation_rmse validation_logloss
+## 1                                                                 
+## 2                       0.03883         0.16542            0.09604
+## 3                       0.00663         0.09145            0.02741
+##   validation_auc validation_lift validation_classification_error
+## 1                                                               
+## 2        0.97480         1.07295                         0.02550
+## 3        0.99975         1.07295                         0.00283
+## 
+## Variable Importances: (Extract with `h2o.varimp`) 
+## =================================================
+## 
+## Variable Importances: 
+##                variable relative_importance scaled_importance percentage
+## 1  TotalArea.LVNELTEFAK            1.000000          1.000000   0.044828
+## 2  MassAccu.HLVDEPQNLIK            0.950939          0.950939   0.042629
+## 3 MassAccu.SLHTLFGDELCK            0.936479          0.936479   0.041980
+## 4      FWHM.HLVDEPQNLIK            0.790054          0.790054   0.035417
+## 5 Charge.VPQVSTPTLVEVSR            0.713035          0.713035   0.031964
+## 
+## ---
+##               variable relative_importance scaled_importance percentage
+## 43 MassAccu.LVNELTEFAK            0.300878          0.300878   0.013488
+## 44   MassAccu.NECFLSHK            0.275860          0.275860   0.012366
+## 45   MZ.ECCHGDLLECADDR            0.268748          0.268748   0.012047
+## 46   MZ.VPQVSTPTLVEVSR            0.238041          0.238041   0.010671
+## 47   Charge.EACFAVEGPK            0.233442          0.233442   0.010465
+## 48   FWHM.YICDNQDTISSK            0.225689          0.225689   0.010117
+\end{verbatim}
+
+The accuracy is 98.57\% . The net could be optmizied further to improve
+the accuracy
+
+\subsubsection{Tuning the ANN}\label{tuning-the-ann}
+
+The simplest hyperparameter search method is a brute-force scan of the
+full Cartesian product of all combinations specified by a grid search.
+There are a lot of paramters to tune and due to limited computational
+capabilities we shall try to tune only some of them.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#hyperparamters to tune }
+\NormalTok{hyper_params <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}
+  \DataTypeTok{hidden=}\KeywordTok{list}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\DecValTok{32}\NormalTok{,}\DecValTok{32}\NormalTok{,}\DecValTok{32}\NormalTok{),}\KeywordTok{c}\NormalTok{(}\DecValTok{50}\NormalTok{,}\DecValTok{200}\NormalTok{,}\DecValTok{50}\NormalTok{)),  }\CommentTok{# different architectures of hidden layer}
+  \DataTypeTok{input_dropout_ratio=}\KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\FloatTok{0.05}\NormalTok{),      }\CommentTok{# values for drop out}
+  \DataTypeTok{rate=}\KeywordTok{c}\NormalTok{(}\FloatTok{0.01}\NormalTok{,}\FloatTok{0.02}\NormalTok{),                  }\CommentTok{# the learning rae}
+  \DataTypeTok{activation =} \KeywordTok{c}\NormalTok{(}\StringTok{"Rectifier"}\NormalTok{)   }\CommentTok{# activation functions}
+\NormalTok{)}
+
+\CommentTok{#grid search}
+
+\NormalTok{grid <-}\StringTok{ }\KeywordTok{h2o.grid}\NormalTok{(}
+  \DataTypeTok{algorithm=}\StringTok{"deeplearning"}\NormalTok{,}
+  \DataTypeTok{grid_id=}\StringTok{"dl_grid"}\NormalTok{,}
+  \DataTypeTok{model_id=}\StringTok{"dl_model_first"}\NormalTok{, }
+  \DataTypeTok{training_frame=}\NormalTok{train_h2o, }
+  \DataTypeTok{x=} \KeywordTok{colnames}\NormalTok{(train_h2o[,}\DecValTok{1}\OperatorTok{:}\DecValTok{12}\NormalTok{]),}
+  \DataTypeTok{y=} \StringTok{"label"}\NormalTok{,}
+  \DataTypeTok{stopping_metric=}\StringTok{"mean_per_class_error"}\NormalTok{,}
+  \DataTypeTok{hyper_params =}\NormalTok{ hyper_params,}
+  \DataTypeTok{epochs=}\DecValTok{1000}\NormalTok{,   }
+  \DataTypeTok{stopping_tolerance=}\FloatTok{0.01}\NormalTok{,}
+  \DataTypeTok{variable_importances=}\NormalTok{T    }
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# sort the model in the grid in decreasing order of error}
+\NormalTok{grid <-}\StringTok{ }\KeywordTok{h2o.getGrid}\NormalTok{(}\StringTok{"dl_grid"}\NormalTok{, }\DataTypeTok{sort_by =} \StringTok{"err"}\NormalTok{, }\DataTypeTok{decreasing =} \OtherTok{FALSE}\NormalTok{)}
+\NormalTok{grid}
+
+\CommentTok{# best model and its full set of parameters}
+\NormalTok{grid}\OperatorTok{@}\NormalTok{summary_table[}\DecValTok{1}\NormalTok{, ]}
+\NormalTok{best_dl_model <-}\StringTok{ }\KeywordTok{h2o.getModel}\NormalTok{(grid}\OperatorTok{@}\NormalTok{model_ids[[}\DecValTok{1}\NormalTok{]])}
+\NormalTok{best_dl_model}
+
+\KeywordTok{print}\NormalTok{(}\KeywordTok{h2o.performance}\NormalTok{(best_dl_model))}
+
+\CommentTok{# storing the confusion matrix}
+\NormalTok{best_dl_confusion <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{h2o.confusionMatrix}\NormalTok{(best_dl_model))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Plotting the model}\label{plotting-the-model}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(dl_model,}\DataTypeTok{timesteps =} \StringTok{"epochs"}\NormalTok{,}\DataTypeTok{metric =} \StringTok{"classification_error"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in plot.window(...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in plot.xy(xy, type, ...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in title(...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in plot.window(...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in plot.xy(xy, type, ...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in axis(side = side, at = at, labels = labels, ...): "timesteps" is
+## not a graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): "timesteps" is
+## not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in box(...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in title(...): "timesteps" is not a graphical parameter
+\end{verbatim}
+
+\includegraphics{NeuralNetworks_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+The training accuracy decreases with increase in epochs. However, this
+might lead to overfitting on training data and poor fit on the test
+data.
+
+\subsubsection{Predictons on test data}\label{predictons-on-test-data}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dl_predict <-}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{h2o.predict}\NormalTok{(dl_model, test_h2o))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{h2o.varimp_plot}\NormalTok{(dl_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{NeuralNetworks_files/figure-latex/unnamed-chunk-12-1.pdf}
+
+
+\end{document}

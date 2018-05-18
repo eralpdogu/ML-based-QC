@@ -2,11 +2,16 @@
 title: "Neural Networks"
 author: "Shantam Gupta"
 date: "May 13, 2018"
-output: pdf_document
+output:
+   pdf_document:
+    highlight: tango
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
 ---
 
 # Installing the Package
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #install.packages("neuralnet")
 library(neuralnet)
 library(nnet)
@@ -15,7 +20,7 @@ library(caret)
 ```
 
 # Load the Data 
-```{r}
+```{r, echo = F}
 Train <- read.csv('lumos_training_set.csv')
 Test <- read.csv('lumos_all_set.csv')
 
@@ -67,13 +72,6 @@ test <- scaled_data[-train_ind,]
 ```
 
 #Building Neural Network
-```{r}
-n <- names(train)
-f <- as.formula(paste("RESPONSE ~", paste(n[!n %in% c("RESPONSE","idfile")], collapse = " + ")))
-nn <- nnet(f,data= scaled_data,hidden=c(5,5,2),linear.output=F,err.fct = "ce")
-summary(nn)
-```
-
 
 ```{r results='hide'}
 library(h2o)
@@ -101,6 +99,7 @@ set.seed(100)
 dl_model <- h2o.deeplearning(
   model_id="dl_model_first", 
   training_frame=train_h2o, 
+  validation_frame = test_h2o,
   x= colnames(train_h2o[,1:48]),
   y= "RESPONSE",
   activation="Rectifier",  
@@ -173,6 +172,9 @@ The training accuracy decreases with increase in epochs. However, this might lea
 dl_predict <- as.data.frame(h2o.predict(dl_model, test_h2o))
 ```
 
+```{r}
+h2o.varimp_plot(dl_model)
+```
 
 ```{r echo = FALSE, results='hide'}
 #shut down the cluster
