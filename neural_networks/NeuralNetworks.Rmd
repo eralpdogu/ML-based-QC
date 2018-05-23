@@ -183,74 +183,16 @@ h2o.varimp_plot(dl_model)
 
 ### Plotting decision boundary for neural networks 
 
-```
-
 ```{r}
-PlotGrid <- function(data, PredictorA, PredictorB, pred,title) {
-  
-  nbp <- 353;
-  PredA <- seq(min(PredictorA), max(PredictorA), length = nbp)
-  PredB <- seq(min(PredictorB), max(PredictorB), length = nbp)
-  Grid <- expand.grid(PredictorA = PredA, PredictorB = PredB)
-  surf <- (ggplot(data = data, aes(x = PredictorA, y = PredictorB, 
-                                      color = as.factor(data$RESPONSE))) +
-          geom_tile(data = cbind(Grid, classes = pred), aes(fill =data$RESPONSE))) +
-          scale_fill_manual(name = 'classes', values = c("RED","GREEN")) +
-          ggtitle("Decision region") + theme(legend.text = element_text(size = 10)) +
-  scale_colour_manual(name = 'classes', values = c("RED","GREEN"))) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0))
-  pts <- (ggplot(data = data, aes(x = PredictorA, y = PredictorB,  
-                                    color = as.factor(data$RESPONSE))) +
-          geom_contour(data = cbind(Grid, classes = pred), aes(z = as.factor(data$RESPONSE)), 
-                       color = c("RED","GREEN"), breaks = c(1.5)) +
-          geom_point(size = 4, alpha = .5) + 
-          ggtitle("Decision boundary") +
-          theme(legend.text = element_text(size = 10)) +
-          scale_colour_manual(name = 'classes', values = c("RED","GREEN"))) +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0))
-  grid.arrange(surf, pts, top = textGrob(title, gp = gpar(fontsize = 20)), ncol = 2)
-}
-```
-
-Ref : http://www.cmap.polytechnique.fr/~lepennec/R/Learning/Learning.html
-
-
-```{r}
-pred = test_pred$predict
-nbp <- 353;
-PredA <- seq(min(test$TotalArea.LVNELTEFAK), max(test$TotalArea.LVNELTEFAK), length.out =  nbp)
-PredB <- seq(min(test$MassAccu.HLVDEPQNLIK), max(test$MassAccu.HLVDEPQNLIK), length.out = nbp)
-Grid <- expand.grid(PredictorA = PredA, PredictorB = PredB)
-ggplot(data = test, aes(x = PredictorA, y = PredictorB, 
-                                      color = data$RESPONSE)) +
-          geom_tile(data = cbind(Grid, classes = pred), aes(fill = data$RESPONSE)) +
-          scale_fill_manual(name = 'classes', values = c("RED","GREEN")) +
-          ggtitle("Decision region") + theme(legend.text = element_text(size = 10)) +
-  scale_colour_manual(name = 'classes', values = c("RED","GREEN")) +
+Color <- c("GREEN","RED")
+names(Color) <- c('GO','NOGO')
+ggplot(data = test,aes(x = test$TotalArea.LVNELTEFAK, y = test$MassAccu.HLVDEPQNLIK)) + 
+  geom_point(aes(color = test$RESPONSE), size = 6, alpha = .5) +
+  scale_colour_manual(name = 'classes', values = Color) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0))
 ```
 
-
-```{r}
-test_pred <- h2o.predict(dl_model, newdata = test_h2o[1:48])
-test_pred <- as.data.frame(test_pred)
-
-
-
-plot(train[,c("TotalArea.LVNELTEFAK","MassAccu.HLVDEPQNLIK")], pch=19, col=train$color, 
-cex=3, xlim=c(-4,4), ylim=c(-4,4))
-train$color = ifelse(train$RESPONSE == "GO","green","red")
-plot(train[,c("MassAccu.SLHTLFGDELCK","MassAccu.HLVDEPQNLIK")], pch=19, col=train$color, 
-cex=3, xlim=c(-4,4), ylim=c(-4,4))
-
-
-Pred <- factor((test_pred$predict), 
-               levels = c('Class1','Class2'))
-xx <- PlotGrid(test,test$TotalArea.LVNELTEFAK, test$MassAccu.HLVDEPQNLIK, Pred, "NN with H2o")
-````
 
 ```{r echo = FALSE, results='hide'}
 #shut down the cluster
