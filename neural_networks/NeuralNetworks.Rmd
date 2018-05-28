@@ -17,7 +17,7 @@ library(neuralnet)
 library(nnet)
 library(dplyr)
 library(caret)
-install.packages("pdp")
+#install.packages("pdp")
 library(pdp)
 library(grid)
 ```
@@ -42,7 +42,7 @@ Data0<-Test[-ind,]
 Data0<-Data0[,-2]
 Data0$PepSeq<- gsub("\\(Carbamidomethyl\\)","",Data0$PepSeq)
 Data1 <- Data0[1:8 + rep(seq(0, nrow(Data0), by=100), each=8),]
-Data1 <- reshape(Data1, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+Data1 <- reshape(Data1, idvar = "idfile", timevar = "PepSeq", direction = "wide")# all no gos
 RESPONSE<-c("NOGO")
 Data <- cbind(Data1,RESPONSE)
 ```
@@ -168,7 +168,7 @@ best_dl_confusion <- as.data.frame(h2o.confusionMatrix(best_dl_model))
 plot(dl_model,timesteps = "epochs",metric = "classification_error")
 ```
 
-The training accuracy decreases with increase in epochs. However, this might lead to overfitting on training data and poor fit on the test data. 
+The training accuracy  and testing accuracy decreases with increase in epochs. 
 
 ### Predictons on test data
 ```{r warning=FALSE, error=FALSE, message=F}
@@ -180,6 +180,10 @@ dl_predict <- as.data.frame(h2o.predict(dl_model, test_h2o))
 h2o.varimp_plot(dl_model)
 ```
 
+### Getting weights for neural network
+```{r}
+h2o.weights(dl_model)
+```
 
 ### Plotting decision boundary for neural networks 
 
@@ -194,19 +198,12 @@ ggplot(data = test,aes(x = test$TotalArea.LVNELTEFAK, y = test$MassAccu.HLVDEPQN
 ```
 
 
+
+### simulating the data for neural networks 
 ```{r echo = FALSE, results='hide'}
 #shut down the cluster
 h2o.shutdown() 
 ```
 
-### Partial dependence plots and maps
-```{r}
-pdpTA <- partial(dl_model, pred.var = "TotalArea.LVNELTEFAK",plot = TRUE, prob=TRUE, rug = TRUE,train = train_h2o)
-pdpRT <- partial(fit, pred.var = "RT.LVNELTEFAK", plot = TRUE, prob=TRUE, rug=TRUE)
-pdpMA <- partial(fit, pred.var = "MassAccu.LVNELTEFAK", plot = TRUE, prob=TRUE, rug = TRUE)
-pdpFWHM <- partial(fit, pred.var = "FWHM.LVNELTEFAK", plot = TRUE, prob=TRUE, rug = TRUE)
-grid.arrange(pdpRT, pdpTA, ncol = 2)
-grid.arrange(pdpMA, pdpFWHM, ncol = 2)
-````
 
 
