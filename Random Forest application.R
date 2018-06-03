@@ -63,6 +63,8 @@ colnames(S0)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
 S0<- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
 RESPONSE<-c("GO")
 S0 <- cbind(S0,RESPONSE)
+
+#generate out-of-control observations
 #Logarithmic drift
 Data1<-data.frame(idfile=((1):(n)),PepSeq=rep("LVNELTEFAK",n),
                   mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),3.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
@@ -81,7 +83,7 @@ Data2<-data.frame(idfile=((n+1):(2*n)),PepSeq=rep("LVNELTEFAK",n),
                           covar))
 colnames(Data2)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
 
-#generate out-of-control observations for a 2 sigma fluctuation in Mass.accu---large shift
+#generate out-of-control observations for a 3 sigma fluctuation in Mass.accu---large shift
 covar1<-covar
 covar1[3,3]<-3*covar[3,3]
 Data3<-data.frame(idfile=((2*n+1):(3*n)),PepSeq=rep("LVNELTEFAK",n),
