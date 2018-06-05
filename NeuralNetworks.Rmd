@@ -20,6 +20,7 @@ library(caret)
 #install.packages("pdp")
 library(pdp)
 library(grid)
+library(MASS)#mvrnorm
 ```
 
 # Load the Data 
@@ -50,10 +51,10 @@ Data <- cbind(Data1,RESPONSE)
 # Preprocess the data: Normalize the data
 ```{r}
 new_data <- rbind(S0,Data)
-maxs <- apply(new_data %>% select(-c(idfile,RESPONSE)), 2, max) 
-mins <- apply(new_data %>% select(-c(idfile,RESPONSE)), 2, min)
+maxs <- apply(new_data %>% dplyr::select(-c(idfile,RESPONSE)), 2, max) 
+mins <- apply(new_data %>% dplyr::select(-c(idfile,RESPONSE)), 2, min)
 
-scaled_data <- as.data.frame(scale(new_data %>% select(-c(idfile,RESPONSE)), center = mins, scale = maxs - mins))
+scaled_data <- as.data.frame(scale(new_data %>% dplyr::select(-c(idfile,RESPONSE)), center = mins, scale = maxs - mins))
 #scaled_data$RESPONSE <- ifelse(new_data$RESPONSE =="GO",1,0)
 scaled_data$RESPONSE <- as.factor(new_data$RESPONSE)
 #scaled_data$RESPONSE <- as.factor(scaled_data$RESPONSE)
@@ -105,7 +106,7 @@ dl_model <- h2o.deeplearning(
   validation_frame = test_h2o,
   x= colnames(train_h2o[,1:48]),
   y= "RESPONSE",
-  activation="tanh",  
+  activation="Tanh",  
   hidden=c(5,4), 
   stopping_metric="mean_per_class_error",
   stopping_tolerance=0.01,
@@ -134,7 +135,7 @@ dl_model2 <- h2o.deeplearning(
   validation_frame = test_h2o,
   x= colnames(train_h2o[,1:48]),
   y= "RESPONSE",
-  activation="tanh",  
+  activation="Tanh",  
   hidden=c(5,4), 
   stopping_metric="mean_per_class_error",
   stopping_tolerance=0.01,
@@ -693,7 +694,7 @@ Data0 <- cbind(Data0,RESPONSE)
 Data0 <-rbind(S0,Data0)
 ```
 
-```{r eval = False}
+```{r}
 #select random ind for train and test 
 set.seed(123)
 
