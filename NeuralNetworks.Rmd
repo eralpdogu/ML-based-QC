@@ -588,4 +588,188 @@ summary(dl_model_sim1)
 plot(dl_model_sim1)
 ```
 
+#### Model with 12 Effects 
+- Increase in Mean (Logarathmic Drift) per feature
+- Increase in 3 X Covariance per feature
+- Increase in 1.5 X sigma mean shift per feature
+```{r}
+#Simulation 1
+#generate multivariate normal data
+#parameters from a training sample
+n<-1000 #incontrol observations 
+Data<-c()
+Data0<-c()
+Data1<-c()
+Data2<-c()
+Data3<-c()
+Data4<-c()
+S0<-c()
+
+#one peptide LVNELTEFAK 
+mean <-c(with(data=Train,tapply(RT,INDEX=PepSeq,FUN=mean))[5],
+         with(data=Train,tapply(TotalArea,INDEX=PepSeq,FUN=mean)) [5],
+         with(data=Train,tapply(MassAccu,INDEX=PepSeq,FUN=mean)) [5],
+         with(data=Train,tapply(FWHM,INDEX=PepSeq,FUN=mean)) [5]
+)
+covar<-cov(Train[Train$PepSeq=="LVNELTEFAK",c(3,6,7,8)])
+#generate in-control observations
+
+S0<-data.frame(idfile=12*n+1:(20*n),PepSeq=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
+colnames(S0)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
+#S0<- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+RESPONSE<-c("GO")
+S0 <- cbind(S0,RESPONSE)
+
+#generate out-of-control observations
+#Logarithmic drift
+Data11 <-data.frame(idfile=((1):(n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(3.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+Data12 <-data.frame(idfile=((n+1):(2*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),3.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+
+Data13 <-data.frame(idfile=((2*n+1):(3*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),3.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+
+Data14 <-data.frame(idfile=((3*n + 1):(4*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),3.0*sqrt(covar[4,4])), 
+                          covar))
+
+#generate out-of-control observations for a 3 sigma fluctuation in all features large shift
+covar21<- covar
+covar21[1,1]<-3*covar[1,1]
+
+Data21<-data.frame(idfile=((4*n+1):(5*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean, 
+                          covar21))
+covar22<- covar
+covar22[2,2]<-3*covar[2,2]
+
+Data22<-data.frame(idfile=((5*n+1):(6*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean, 
+                          covar22))
+
+
+covar23<-covar
+covar23[3,3]<-3*covar[3,3]
+
+Data23<-data.frame(idfile=((6*n+1):(7*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean, 
+                          covar23))
+
+covar24<-covar
+covar24[4,4]<-3*covar[4,4]
+
+Data24<-data.frame(idfile=((7*n+1):(8*n)),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean, 
+                          covar24))
+
+
+#generate out-of-control observations for a 1.5 sigma step shift 
+Data31 <-data.frame(idfile=(8*n+1):(9*n),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.5*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+
+Data32 <-data.frame(idfile=(9*n+1):(10*n),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),1.5*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+
+Data33 <-data.frame(idfile=(10*n+1):(11*n),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.5*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
+                          covar))
+
+Data34 <-data.frame(idfile=(11*n+1):(12*n),PepSeq=rep("LVNELTEFAK",n),
+                  mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.5*sqrt(covar[4,4])), 
+                          covar))
+
+
+#Merge all four type of disturbances + in-control observations
+Data0<-rbind(Data11,Data12, Data13, Data14, Data21, Data22, Data23, Data24, Data31, Data32, Data33, Data34) #Data0<-reshape(Data0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+RESPONSE<-c("NOGO")
+colnames(Data0) <- c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
+Data0 <- cbind(Data0,RESPONSE)
+Data0 <-rbind(S0,Data0)
+```
+
+```{r eval = False}
+#select random ind for train and test 
+set.seed(123)
+
+## 75% of the sample size
+smp_size <- floor(0.8 * nrow(Data0))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(Data0)), size = smp_size)
+
+train_sim_all <- Data0[train_ind,]
+test_sim_all <- Data0[-train_ind,]
+
+#min max scaling & centering the train data 0-1
+train_maxs <- apply(train_sim_all %>% dplyr::select(-c(idfile, PepSeq, RESPONSE)), 2, max) 
+train_mins <- apply(train_sim_all %>% dplyr::select(-c(idfile, PepSeq, RESPONSE)), 2, min)
+train_sim_all_scaled_data <- as.data.frame(scale(train_sim_all %>% dplyr::select(-c(idfile,PepSeq,RESPONSE)), center = train_mins, scale = train_maxs - train_mins))
+
+#min max scaling & centering the test data 0-1
+test_maxs <- apply(test_sim_all %>% dplyr::select(-c(idfile,PepSeq, RESPONSE)), 2, max) 
+test_mins <- apply(test_sim_all %>% dplyr::select(-c(idfile, PepSeq, RESPONSE)), 2, min)
+test_sim_all_scaled_data <- as.data.frame(scale(test_sim_all %>% dplyr::select(-c(idfile,PepSeq, RESPONSE)), center = test_mins, scale = test_maxs - test_mins))
+
+
+
+train_sim_all_scaled_data$RESPONSE <- as.factor(train_sim_all$RESPONSE)
+train_sim_all_scaled_data$idfile <- train_sim_all$idfile
+
+test_sim_all_scaled_data$RESPONSE <- as.factor(test_sim_all$RESPONSE)
+test_sim_all_scaled_data$idfile <- test_sim_all$idfile
+```
+
+
+
+```{r}
+#Building Neural Network
+library(h2o)
+#generate same set of random numbers (for reproducibility)
+set.seed(121)
+
+#launch h2o cluster
+localH2O <- h2o.init(nthreads = -1)
+
+
+#import r objects to h2o cloud
+train_h2o <- as.h2o(train_sim_all)
+test_h2o <- as.h2o(test_sim_all)
+
+set.seed(100)
+
+dl_model_sim1 <- h2o.deeplearning(
+  model_id="dl_model_first", 
+  training_frame=train_h2o, 
+  validation_frame = test_h2o,
+  x= colnames(train_h2o[,3:6]),
+  y= "RESPONSE",
+  activatio="Tanh",  
+  hidden=c(20,20), 
+  standardize = TRUE, #standardizes the data
+  loss= "CrossEntropy",
+  stopping_metric="logloss",
+  stopping_rounds = 10,
+  stopping_tolerance=0.00001,
+  adaptive_rate = TRUE,
+  shuffle_training_data = TRUE, 
+  rate = 0.005, # Defaults to 0.005 adaptive enabled so cannot specify the learning rare 
+  mini_batch_size = 1,# defaults to 1 
+  epochs=200,
+  seed = 123, # give seed 
+  export_weights_and_biases = T, # export weights and biases defaults to false
+  reproducible = T # Force reproducibility on small data (will be slow - only uses 1 thread). Defaults to FALSE.
+)
+summary(dl_model_sim1)
+plot(dl_model_sim1)
+```
+
+
+
 
