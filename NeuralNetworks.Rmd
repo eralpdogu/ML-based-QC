@@ -270,7 +270,6 @@ h2o.shutdown()
 ```
 
 
-## Simulating 3 effects 
 
 ## Main Data 
 ```{r}
@@ -280,7 +279,7 @@ Train %>% group_by(PepSeq) %>% summarise(Count = n())
 ```
 
 
-### Simulation 1: Spike in mean X 10 
+# Simulation : Spike in mean X 10  per feature to check variable importance
 ```{r}
 spike_mean <- function(num_col,value){
   # Train Data 
@@ -589,7 +588,7 @@ summary(dl_model_sim1)
 plot(dl_model_sim1)
 ```
 
-#### Model with 12 Effects 
+# Model with 12 Effects 
 - Increase in Mean (Logarathmic Drift) per feature
 - Increase in 3 X Covariance per feature
 - Increase in 1.5 X sigma mean shift per feature
