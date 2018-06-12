@@ -25,8 +25,10 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   }
   
   guide.set$peptide<-as.factor(guide.set$peptide)
+  
+  guide.set.scale<-cbind(guide.set[,1:2],scale(guide.set[,-c(1:2)]))
   ###########Simulation#############################################################################
-  n<-1000 #incontrol observations 
+  n<-100 #incontrol observations 
   Train.set<-c()
   Data0<-c()
   Data1<-c()
@@ -36,12 +38,12 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   S0<-c()
   
   #one peptide LVNELTEFAK 
-  mean <-c(with(data=guide.set,tapply(RT,INDEX=peptide,FUN=mean))[4],
-           with(data=guide.set,tapply(TotalArea,INDEX=peptide,FUN=mean)) [4],
-           with(data=guide.set,tapply(MassAccu,INDEX=peptide,FUN=mean)) [4],
-           with(data=guide.set,tapply(FWHM,INDEX=peptide,FUN=mean)) [4]
+  mean <-c(with(data=guide.set.scale,tapply(RT,INDEX=peptide,FUN=mean))[4],
+           with(data=guide.set.scale,tapply(TotalArea,INDEX=peptide,FUN=mean)) [4],
+           with(data=guide.set.scale,tapply(MassAccu,INDEX=peptide,FUN=mean)) [4],
+           with(data=guide.set.scale,tapply(FWHM,INDEX=peptide,FUN=mean)) [4]
   )
-  covar<-cov(guide.set[guide.set$peptide=="LVNELTEFAK",c(3,6,7,8)])
+  covar<-cov(guide.set.scale[guide.set.scale$peptide=="LVNELTEFAK",c(3,6,7,8)])
   #generate in-control observations
   
   S0<-data.frame(idfile=1:(4*n),peptide=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
@@ -51,10 +53,7 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   S0 <- cbind(S0,RESPONSE)
   
   #generate out-of-control observations
-  #Logarithmic drift
-  Data1<-data.frame(idfile=((1):(n)),peptide=rep("LVNELTEFAK",n),
-                    mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),3.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
-                            covar))
+  #Logarithmic drift in FWHM
   Data1<-as.data.frame(matrix(0,n,6))
   for(i in 1:n){
   Data1[i,]<-c(idfile=i,peptide=rep("LVNELTEFAK",1),
@@ -71,7 +70,7 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
                             covar))
   colnames(Data2)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
-  #generate out-of-control observations for a 3 sigma fluctuation in Mass.accu---large shift
+  #generate out-of-control observations for a 3 sigma fluctuation in Mass.accu---large variation
   covar1<-covar
   covar1[3,3]<-3*covar[3,3]
   Data3<-data.frame(idfile=((2*n+1):(3*n)),peptide=rep("LVNELTEFAK",n),
@@ -91,41 +90,30 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   RESPONSE<-c("NOGO")
   Train.set <- cbind(Train.set,RESPONSE)
   Train.set<-rbind(S0,Train.set)
-  
+
   #############Include MR and CUSUMs#################################################################
   #for(j in 1:(nlevels(guide.set$peptide)*nmetrics)){
   for(j in 2:5){
-
   v <- numeric(length(Train.set[,j]))
-  t <- numeric(length(Train.set[,j]))
-  Cpoz.mean <- numeric(length(Train.set[,j]))
-  Cneg.mean <- numeric(length(Train.set[,j]))
-  Cpoz.var <- numeric(length(Train.set[,j]))
-  Cneg.var <- numeric(length(Train.set[,j]))
+  MR <- numeric(length(Train.set[,j]))
+  CUSUMpoz.m <- numeric(length(Train.set[,j]))
+  CUSUMneg.m <- numeric(length(Train.set[,j]))
+  CUSUMpoz.v <- numeric(length(Train.set[,j]))
+  CUSUMneg.v <- numeric(length(Train.set[,j]))
   
   k<-0.5
   for(i in 2:length(Train.set[,j])) {
-    Cpoz.mean[i] <- max(0,(Train.set[i,j]-(k)+Cpoz[i-1]))
-    Cneg.mean[i] <- max(0,((-k)-Train.set[i,j]+Cneg[i-1]))
+    MR[i] <- abs(Train.set[i,j]-Train.set[(i-1),j])
+    v[i] <- (sqrt(abs(Train.set[i,j]))-0.822)/0.349
+    CUSUMpoz.m[i] <- max(0,(Train.set[i,j]-(k)+CUSUMpoz.m[i-1]))
+    CUSUMneg.m[i] <- max(0,((-k)-Train.set[i,j]+CUSUMneg.m[i-1]))
+    CUSUMpoz.v[i] <- max(0,(v[i]-(k)+CUSUMpoz.v[i-1]))
   }
   
-    for(i in 2:length(Train.set[,j])) {
-      v[i] <- (sqrt(abs(Train.set[i,j]))-0.822)/0.349
-    }
-  
-    for(i in 2:length(Train.set[,j])) {
-      Cpoz.var[i] <- max(0,(v[i]-(k)+Cpoz[i-1]))
-      Cneg.var[i] <- max(0,((-k)-v[i]+Cneg[i-1]))
-    }
-  
-  for(i in 2:length(Train.set[,j])) {
-    t[i] <- abs(Train.set[i,j]-Train.set[(i-1),j])
-  }
-  addfeatures<-cbind(Cpoz.mean,Cneg.mean,Cpoz.var,Cneg.var,t)
-  colnames(addfeatures) <- paste(levels(guide.set$peptide)[4], colnames(addfeatures), sep = ".")
-  }
-  
+  addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m,CUSUMpoz.v)
+  colnames(addfeatures) <- paste(colnames(Train.set[j]),colnames(addfeatures), sep = ".")
   Train.set<-cbind(Train.set,addfeatures)
+  }
   #############Classification########################################################################
   if(method="randomforest"){
   
@@ -134,10 +122,9 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
                  data = Train.set[,-c(1,2)], 
                  method="rf",
                  preProcess = c("center", "scale", "nzv"),
-                 tuneGrid = data.frame(mtry = 6)) # change mtry as square root of number of predictors
+                 tuneGrid = data.frame( mtry=floor(sqrt(ncol(Train.set))) )) # change mtry as square root of number of predictors
     
     #Model agnostics
-    importance<-varImp(fit)$importance
     plot(varImp(fit))
     
     return(fit) # return the model object 
