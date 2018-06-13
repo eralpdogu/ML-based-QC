@@ -28,7 +28,7 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   
   guide.set.scale<-cbind(guide.set[,1:2],scale(guide.set[,-c(1:2)]))
   ###########Simulation#############################################################################
-  n<-100 #incontrol observations 
+  n<-100#incontrol observations 
   Train.set<-c()
   Data0<-c()
   Data1<-c()
@@ -46,7 +46,21 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   covar<-cov(guide.set.scale[guide.set.scale$peptide=="LVNELTEFAK",c(3,6,7,8)])
   #generate in-control observations
   
-  S0<-data.frame(idfile=1:(4*n),peptide=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
+  dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$TotalArea[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$MassAccu[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$FWHM[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  #S0<-data.frame(idfile=1:(4*n),peptide=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
+  S0<-data.frame(idfile=1:(4*n),peptide=rep("LVNELTEFAK",n),
+                 sim.sample.RT,sim.sample.TotalArea,sim.sample.MassAccu,sim.sample.FWHM)
   colnames(S0)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   S0<- reshape(S0, idvar = "idfile", timevar = "peptide", direction = "wide")
   RESPONSE<-c("GO")
@@ -54,34 +68,81 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   
   #generate out-of-control observations
   #Logarithmic drift in FWHM
+  dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$TotalArea[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$MassAccu[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$FWHM[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
   Data1<-as.data.frame(matrix(0,n,6))
+
   for(i in 1:n){
   Data1[i,]<-c(idfile=i,peptide=rep("LVNELTEFAK",1),
-                  mvrnorm(1, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),log(i,base=2)*sqrt(covar[4,4])), 
-                          covar))
+               sim.sample.RT[i], sim.sample.TotalArea[i], sim.sample.MassAccu[i],sim.sample.FWHM[i]+log(i,base=2)*IQR(sim.sample.FWHM))
+  # Data1[i,]<-c(idfile=i,peptide=rep("LVNELTEFAK",1),
+  #                 mvrnorm(1, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),log(i,base=2)*sqrt(covar[4,4])), 
+  #                         covar))
   }
   for (i in 3:ncol(Data1)){ Data1[,i]<-as.numeric(Data1[,i])}
- 
   colnames(Data1)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
   #generate out-of-control observations for a 3 sigma step shift in Total.area---large shift
+  dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$TotalArea[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$MassAccu[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$FWHM[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
   Data2<-data.frame(idfile=((n+1):(2*n)),peptide=rep("LVNELTEFAK",n),
-                    mvrnorm(n, mean+c(1.0*sqrt(covar[1,1]),3.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
-                            covar))
+                    sim.sample.RT, sim.sample.TotalArea+1.5*IQR(sim.sample.TotalArea), sim.sample.MassAccu, sim.sample.FWHM)
+
   colnames(Data2)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
-  #generate out-of-control observations for a 3 sigma fluctuation in Mass.accu---large variation
-  covar1<-covar
-  covar1[3,3]<-3*covar[3,3]
+  #generate out-of-control observations for a 3 sigma fluctuation in Mass.accu---large variation, change in shape of the density
+  dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$TotalArea[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$MassAccu[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$FWHM[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
   Data3<-data.frame(idfile=((2*n+1):(3*n)),peptide=rep("LVNELTEFAK",n),
-                    mvrnorm(n, mean, 
-                            covar1))
+                    sim.sample.RT, sim.sample.TotalArea, sim.sample.MassAccu^(3), sim.sample.FWHM)
+  
   colnames(Data3)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
   #generate out-of-control observations for a 1.5 sigma step shift in RT---small shift
+  dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$TotalArea[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$MassAccu[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
+  dat.dens = density(guide.set.scale$FWHM[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
+  sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
+  
   Data4<-data.frame(idfile=(3*n+1):(4*n),peptide=rep("LVNELTEFAK",n),
-                    mvrnorm(n, mean+c(1.5*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),1.0*sqrt(covar[4,4])), 
-                            covar))
+                    sim.sample.RT+0.5*IQR(sim.sample.RT), sim.sample.TotalArea, sim.sample.MassAccu, sim.sample.FWHM)
+  
   colnames(Data4)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
   #Merge all four type of disturbances + in-control observations
@@ -118,16 +179,18 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   if(method="randomforest"){
   
   #RF model
-    fit <- train(RESPONSE ~ ., 
-                 data = Train.set[,-c(1,2)], 
+  fit <- train(RESPONSE ~ ., 
+                 data = Train.set[,-1], 
                  method="rf",
                  preProcess = c("center", "scale", "nzv"),
                  tuneGrid = data.frame( mtry=floor(sqrt(ncol(Train.set))) )) # change mtry as square root of number of predictors
     
-    #Model agnostics
+  #Model agnostics
     plot(varImp(fit))
-    
-    return(fit) # return the model object 
+  
+    Predict<-predict(fit, Test.set)
+    Predict.prob<-predict(fit, Test.set, type="prob")
+    confusionMatrix(as.factor(Test.set$RESPONSE), Predict,positive='NOGO')
   }
   
   else if(method="neuralnetwork"){
@@ -180,5 +243,3 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
     }
 
 }
-
-
