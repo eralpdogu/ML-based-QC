@@ -3,7 +3,6 @@ setwd("C:/Users/aidata-1508/Dropbox/2. MSstatsQC Paper 2-QCloud")
 
 install.packages('caret', dependencies = TRUE) 
 install.packages('gtools',dependencies = TRUE)
-install.packages('pdp',dependencies = TRUE)
 
 library(caret)
 library(boot)
@@ -11,7 +10,6 @@ library(gtools) #smartbin
 library(ggplot2)
 library(MASS) #mvnrnd
 library(pdp)
-library(dplyr) #sample_n
 
 Train <- read.csv('lumos_training_set.csv')
 Test <- read.csv('lumos_all_set.csv')
@@ -99,7 +97,8 @@ cowplot::plot_grid(plot1, plot2, labels = c("RF based control chart", "Importanc
 #Simulation 1
 #generate multivariate normal data
 #parameters from a training sample
-n<-1000 #incontrol observations 
+n<-100 #incontrol observations 
+m<-100 #ooc observations
 Data<-c()
 Data1<-c()
 S0<-c()
@@ -111,63 +110,19 @@ mean <-c(with(data=Train,tapply(RT,INDEX=PepSeq,FUN=mean))[4],
          with(data=Train,tapply(FWHM,INDEX=PepSeq,FUN=mean)) [4]
          )
 covar<-cov(Train[Train$PepSeq=="LVNELTEFAK",c(3,6,7,8)])
-#generate in-control observations
-
-S0<-data.frame(idfile=1:(4*n),PepSeq=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
+S0<-data.frame(idfile=1:n,PepSeq=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
 colnames(S0)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
-S0<- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+S0 <- reshape(S0, idvar = "idfile", timevar = "PepSeq", direction = "wide")
 RESPONSE<-c("GO")
 S0 <- cbind(S0,RESPONSE)
 
-
-Data1<-data.frame(idfile=1:n,PepSeq=rep("LVNELTEFAK",n),
-                   mvrnorm(n, mean+(sqrt(3.0*c(covar[1,1],3.0*covar[2,2],3.0*covar[3,3],3.0*covar[4,4]))), 
-                           covar))
+Data1<-data.frame(idfile=(n+1):(n+m),PepSeq=rep("LVNELTEFAK",m),u
+                  mvrnorm(m, mean+(sqrt(0.0*c(covar[1,1],1.0*covar[2,2],3.0*covar[3,3],1.0*covar[4,4]))), 
+                  covar))
 colnames(Data1)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
-Data2<-data.frame(idfile=((n+1):(2*n)),PepSeq=rep("LVNELTEFAK",n),
-                  mvrnorm(n, mean+(sqrt(1.5*c(covar[1,1],3.0*covar[2,2],3.0*covar[3,3],3.0*covar[4,4]))), 
-                          covar))
-colnames(Data2)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
-Data3<-data.frame(idfile=((2*n+1):(3*n)),PepSeq=rep("LVNELTEFAK",n),
-                  mvrnorm(n, mean, 
-                          1.5*covar))
-colnames(Data3)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
-Data4<-data.frame(idfile=((3*n+1):(4*n)),PepSeq=rep("LVNELTEFAK",n),
-                  mvrnorm(n, mean, 
-                          1.5*covar))
-colnames(Data4)<-c("idfile","PepSeq","RT","TotalArea","MassAccu","FWHM")
-
-Data<-rbind(Data1,Data2,Data3,Data4)
-Data<-reshape(Data, idvar = "idfile", timevar = "PepSeq", direction = "wide")
+Data1 <- reshape(Data1, idvar = "idfile", timevar = "PepSeq", direction = "wide")
 RESPONSE<-c("NOGO")
-Data <- cbind(Data,RESPONSE)
-
-Data<-rbind(S0,Data)
-
-Data<-sample_n(Data, 1000)
-
-fitControl <- trainControl(classProbs = T, method = "oob")
-
-fit <- train(as.factor(RESPONSE) ~ ., 
-             data = Data, 
-             method="rf",
-             preProcess = c("center", "scale", "nzv"),
-             trainControl=fitControl,  
-             tuneGrid = data.frame(mtry = 6))
-
-Predict<-predict(fit, type='prob', OOB=TRUE)
-importance<-varImp(fit)$importance
-
-pdpTA <- partial(fit, pred.var = "TotalArea.LVNELTEFAK",plot = TRUE, prob=TRUE)
-pdpRT <- partial(fit, pred.var = "RT.LVNELTEFAK", plot = TRUE, prob=TRUE)
-pdpMA <- partial(fit, pred.var = "MassAccu.LVNELTEFAK", plot = TRUE, prob=TRUE)
-pdpFWHM <- partial(fit, pred.var = "FWHM.LVNELTEFAK", plot = TRUE, prob=TRUE)
-grid.arrange(pdpRT, pdpTA, pdpMA, pdpFWHM, ncol = 4)
-pdp1<- partial(fit, pred.var = c("TotalArea.LVNELTEFAK","RT.LVNELTEFAK"), plot = TRUE, prob=TRUE, chull=TRUE)
-pdp2<- partial(fit, pred.var = c("MassAccu.LVNELTEFAK","RT.LVNELTEFAK"), plot = TRUE, prob=TRUE, chull=TRUE)
-pdp3<- partial(fit, pred.var = c("FWHM.LVNELTEFAK", "RT.LVNELTEFAK"), plot = TRUE, prob=TRUE, chull=TRUE)
-grid.arrange(pdp1, pdp2, pdp3,ncol = 3)
-
+Data <- cbind(Data1,RESPONSE)
 
 #Simulation 2
 #generate multivariate normal data 4 peptides 

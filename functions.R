@@ -11,7 +11,7 @@ modeling <- function(n){
     
     #RF model
     fit <- train(RESPONSE ~ ., 
-                 data = train_sim_all[,-c(1,2)], 
+                 data = train_sim_all[,-c(1,2)],  
                  method="rf",
                  preProcess = c("center", "scale", "nzv"),
                  tuneGrid = data.frame(mtry = 6)) # change mtry as square root of number of predictors
