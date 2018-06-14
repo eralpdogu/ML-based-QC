@@ -12,6 +12,7 @@ library(ggplot2)
 library(MASS) #mvnrnd
 library(pdp)
 library(dplyr) #sample_n
+library(lime)
 
 Train <- read.csv('lumos_training_set.csv')
 Test <- read.csv('lumos_all_set.csv')
