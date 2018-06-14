@@ -5,8 +5,8 @@
 #' @param peptide the name of peptide of interest.
 #' @param method the method used to model. Two values can be assigned, "randomforest" or "neuralnetwork".
 #' @export
-#' @import caret pdp ggplot2 MASS dplyr
-#' @import h2o
+#' @import caret pdp ggplot2 MASS dplyr lime
+#' @import h2o 
 #' @examples
 #' # First process the data to make sure it's ready to use
 #' sampleData <- MSstatsQC::DataProcess(S9Site54)
@@ -16,7 +16,7 @@
 #' # Calculate change point statistics
 #' QcClassifierTrainr(guide.set = sampleData[1:20,], peptide = "LVNELTEFAK", method = "randomforest")
 
-QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
+QcClassifierTrain <- function(guide.set, method, nmetrics){
   
   if(is.null(guide.set))
     return()
@@ -28,7 +28,7 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   
   guide.set.scale<-cbind(guide.set[,1:2],scale(guide.set[,-c(1:2)]))
   ###########Simulation#############################################################################
-  n<-100#incontrol observations 
+  n<-1000#incontrol observations 
   Train.set<-c()
   Data0<-c()
   Data1<-c()
@@ -36,14 +36,6 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   Data3<-c()
   Data4<-c()
   S0<-c()
-  
-  #one peptide LVNELTEFAK 
-  mean <-c(with(data=guide.set.scale,tapply(RT,INDEX=peptide,FUN=mean))[4],
-           with(data=guide.set.scale,tapply(TotalArea,INDEX=peptide,FUN=mean)) [4],
-           with(data=guide.set.scale,tapply(MassAccu,INDEX=peptide,FUN=mean)) [4],
-           with(data=guide.set.scale,tapply(FWHM,INDEX=peptide,FUN=mean)) [4]
-  )
-  covar<-cov(guide.set.scale[guide.set.scale$peptide=="LVNELTEFAK",c(3,6,7,8)])
   #generate in-control observations
   
   dat.dens = density(guide.set.scale$RT[guide.set.scale$peptide=="LVNELTEFAK"], n=2^10)
@@ -83,10 +75,8 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
 
   for(i in 1:n){
   Data1[i,]<-c(idfile=i,peptide=rep("LVNELTEFAK",1),
-               sim.sample.RT[i], sim.sample.TotalArea[i], sim.sample.MassAccu[i],sim.sample.FWHM[i]+log(i,base=2)*IQR(sim.sample.FWHM))
-  # Data1[i,]<-c(idfile=i,peptide=rep("LVNELTEFAK",1),
-  #                 mvrnorm(1, mean+c(1.0*sqrt(covar[1,1]),1.0*sqrt(covar[2,2]),1.0*sqrt(covar[3,3]),log(i,base=2)*sqrt(covar[4,4])), 
-  #                         covar))
+               sim.sample.RT[i], sim.sample.TotalArea[i], sim.sample.MassAccu[i],
+               sim.sample.FWHM[i]+log(i,base=2)*IQR(sim.sample.FWHM))
   }
   for (i in 3:ncol(Data1)){ Data1[,i]<-as.numeric(Data1[,i])}
   colnames(Data1)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
@@ -105,7 +95,7 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
   
   Data2<-data.frame(idfile=((n+1):(2*n)),peptide=rep("LVNELTEFAK",n),
-                    sim.sample.RT, sim.sample.TotalArea+1.5*IQR(sim.sample.TotalArea), sim.sample.MassAccu, sim.sample.FWHM)
+                    sim.sample.RT, sim.sample.TotalArea+2.0*IQR(sim.sample.TotalArea), sim.sample.MassAccu, sim.sample.FWHM)
 
   colnames(Data2)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
@@ -141,16 +131,17 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
   
   Data4<-data.frame(idfile=(3*n+1):(4*n),peptide=rep("LVNELTEFAK",n),
-                    sim.sample.RT+0.5*IQR(sim.sample.RT), sim.sample.TotalArea, sim.sample.MassAccu, sim.sample.FWHM)
+                    sim.sample.RT+0.75*IQR(sim.sample.RT), sim.sample.TotalArea, sim.sample.MassAccu, sim.sample.FWHM)
   
   colnames(Data4)<-c("idfile","peptide","RT","TotalArea","MassAccu","FWHM")
   
   #Merge all four type of disturbances + in-control observations
   Train.set<-rbind(Data1,Data2,Data3,Data4)
   Train.set<-reshape(Train.set, idvar = "idfile", timevar = "peptide", direction = "wide")
-  RESPONSE<-c("NOGO")
+  RESPONSE<-c(rep("NOGO",n),rep("NOGO",n),rep("NOGO",n),rep("NOGO",n))
   Train.set <- cbind(Train.set,RESPONSE)
   Train.set<-rbind(S0,Train.set)
+  Train.set$idfile<-1:(8*n)
 
   #############Include MR and CUSUMs#################################################################
   #for(j in 1:(nlevels(guide.set$peptide)*nmetrics)){
@@ -160,8 +151,11 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
   CUSUMpoz.m <- numeric(length(Train.set[,j]))
   CUSUMneg.m <- numeric(length(Train.set[,j]))
   CUSUMpoz.v <- numeric(length(Train.set[,j]))
-  CUSUMneg.v <- numeric(length(Train.set[,j]))
-  
+  CUSUMpoz.m[1]<-0
+  CUSUMneg.m[1]<-0
+  CUSUMpoz.v[1]<-0
+  MR[1]<-0
+  v[1]<-0
   k<-0.5
   for(i in 2:length(Train.set[,j])) {
     MR[i] <- abs(Train.set[i,j]-Train.set[(i-1),j])
@@ -170,17 +164,16 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
     CUSUMneg.m[i] <- max(0,((-k)-Train.set[i,j]+CUSUMneg.m[i-1]))
     CUSUMpoz.v[i] <- max(0,(v[i]-(k)+CUSUMpoz.v[i-1]))
   }
-  
-  addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m,CUSUMpoz.v)
+  addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
   colnames(addfeatures) <- paste(colnames(Train.set[j]),colnames(addfeatures), sep = ".")
   Train.set<-cbind(Train.set,addfeatures)
   }
   #############Classification########################################################################
   if(method="randomforest"){
-  
+  Train.set<-Train.set[,-1]
+  Test.set<-Test.set[,-1]
   #RF model
-  fit <- train(RESPONSE ~ ., 
-                 data = Train.set[,-1], 
+  fit <- train(y=Train.set[,5],x=Train.set[,-5], 
                  method="rf",
                  preProcess = c("center", "scale", "nzv"),
                  tuneGrid = data.frame( mtry=floor(sqrt(ncol(Train.set))) )) # change mtry as square root of number of predictors
@@ -191,6 +184,11 @@ QcClassifierTrain <- function(guide.set, peptide, method, nmetrics){
     Predict<-predict(fit, Test.set)
     Predict.prob<-predict(fit, Test.set, type="prob")
     confusionMatrix(as.factor(Test.set$RESPONSE), Predict,positive='NOGO')
+    
+    explainer <- lime(Train.set[,-5], fit)
+    explanation <- explain(Test.set[,-5], explainer, n_labels = 1, n_features = 2)
+    plot_features(explanation[75:80,])
+    
   }
   
   else if(method="neuralnetwork"){
