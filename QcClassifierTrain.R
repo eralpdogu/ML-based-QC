@@ -15,7 +15,7 @@
 #' levels(sampleData$Precursor)
 #' # Calculate change point statistics
 #' #QcClassifierTrain(guide.set = sampleData,"LVNELTEFAK",method = "neuralnetwork",all_features = F)
-QcClassifierTrain <- function(guide.set, peptide,method,all_features){
+QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   
   if(is.null(guide.set))
     return()
@@ -27,9 +27,8 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features){
   names(guide.set)[6:9] <-c("RT","TotalArea","FWHM","MassAccu")
   guide.set.scale<-cbind(guide.set[,1:2],scale(guide.set[,-c(1:2)]))
   
-  
   ###########Simulation#############################################################################
-  n<-1000#incontrol observations 
+  n<-sim.size#incontrol observations 
   Data.set<-c()
   Data0<-c()
   Data1<-c()
@@ -46,9 +45,6 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features){
   #generate in-control observations
   source("sample_density_function.R")
   sample_data <- sample_density(guide.set.scale,peptide, n)
-  
-  
-  
   
   #S0<-data.frame(idfile=1:(4*n),peptide=rep("LVNELTEFAK",n),mvrnorm(n, mean, covar))
   S0<-data.frame(idfile=1:(4*n),peptide=rep(peptide,n),
