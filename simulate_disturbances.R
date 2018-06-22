@@ -20,7 +20,7 @@ Data.set<-list()
   source("sample_density_function.R")
 
   for(j in 1:nlevels(guide.set.scale$peptide)){
-
+  Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
   
   Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j], n),
@@ -54,7 +54,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
       CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-    colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+    colnames(addfeatures) <- paste(colnames(Data0[[j]])[i], colnames(addfeatures), sep = ".")
     Data0[[j]]<-cbind(Data0[[j]],addfeatures) # full dataset with external features
   }
 }
@@ -99,7 +99,7 @@ for(j in 1:nlevels(guide.set$peptide)){
     CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
   }
   addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-  colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+  colnames(addfeatures) <- paste(colnames(Data1[[j]])[i], colnames(addfeatures), sep = ".")
   Data1[[j]]<-cbind(Data1[[j]],addfeatures) # full dataset with external features
   }
   }
@@ -143,14 +143,14 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
       CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-    colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+    colnames(addfeatures) <- paste(colnames(Data2[[j]])[i], colnames(addfeatures), sep = ".")
     Data2[[j]]<-cbind(Data2[[j]],addfeatures) # full dataset with external features
   }
 }
 
 #generate out-of-control observations for a +2 IQR shift in Total.area---large shift
 for(j in 1:nlevels(guide.set.scale$peptide)){
-  
+  Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
   
   Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],n),
@@ -184,14 +184,14 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
       CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-    colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+    colnames(addfeatures) <- paste(colnames(Data3[[j]])[i], colnames(addfeatures), sep = ".")
     Data3[[j]]<-cbind(Data3[[j]],addfeatures) # full dataset with external features
   }
 }
 
 #generate out-of-control observations for a -2 IQR shift in Total.area---large shift
 for(j in 1:nlevels(guide.set.scale$peptide)){
-  
+  Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
   
   Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],n),
@@ -225,7 +225,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
       CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-    colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+    colnames(addfeatures) <- paste(colnames(Data4[[j]])[i], colnames(addfeatures), sep = ".")
     Data4[[j]]<-cbind(Data4[[j]],addfeatures) # full dataset with external features
   }
 }
@@ -271,7 +271,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
       CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
-    colnames(addfeatures) <- paste(levels(guide.set$peptide)[j], colnames(addfeatures), sep = ".")
+    colnames(addfeatures) <- paste(colnames(Data5[[j]])[i], colnames(addfeatures), sep = ".")
     Data5[[j]]<-cbind(Data5[[j]],addfeatures) # full dataset with external features
   }
 }

@@ -28,7 +28,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   j<-which(levels(guide.set.scale$peptide)==peptide)
   
   ###########Simulation#############################################################################
-  Data.set<-simulate_disturbances(guide.set.scale, sim.size=1000)
+  Data.set<-simulate_disturbances(guide.set.scale, sim.size=100)
   
   ###Splitting Test & Train Data #######################################################################
   ## 75% of the sample size
@@ -38,14 +38,14 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   set.seed(123)
   train_ind <- sample(seq_len(nrow(Data.set[[j]])), size = smp_size)
   
-  train <- Data.set[train_ind,]
-  test <- Data.set[-train_ind,]
+  train <- Data.set[[j]][train_ind,]
+  test <- Data.set[[j]][-train_ind,]
 
   #############Classification########################################################################
   if(method=="randomforest" & all_features == T){
   #RF model
     print("Random Forest: Train Data using all features :")
-    fit_all <- train(y=train[,"RESPONSE"],x=subset(train,select = -c(RESPONSE)), 
+    fit_all <- train(y=train[,"RESPONSE"],x=subset(train,select = -c(RESPONSE,idfile)), 
                  method="rf",
                  preProcess = c("center", "scale", "nzv"),
                  tuneGrid = data.frame( mtry=floor(sqrt(ncol(train))) )) # change mtry as square root of number of predictors
@@ -58,7 +58,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
     Predict<-predict(fit_all, test)
     Predict.prob<-predict(fit_all, test, type="prob")
     print("Random Forest: Test Data using all features :")
-    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='NOGO')
+    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='FAIL')
     
     explainer <- lime(subset(train,select = -c(RESPONSE)), fit_all)
     explanation <- explain(subset(test,select = -c(RESPONSE)), explainer, n_labels = 1, n_features = 2)
