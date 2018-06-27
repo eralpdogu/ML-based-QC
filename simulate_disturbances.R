@@ -16,14 +16,14 @@ Data.set<-list()
   
   #generate in-control observations
   source("sample_density_function.R")
-  source("add_feature.R")
+  source("add_features.R")
 
   for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size*6)
   
-  Data<-data.frame(idfile=1:n,
-                   peptide=rep(levels(guide.set.scale$peptide)[j], sim.size),
+  Data<-data.frame(idfile=1:(6*sim.size),
+                   peptide=rep(levels(guide.set.scale$peptide)[j], (6*sim.size)),
                    sample_data[1], sample_data[2], sample_data[3], sample_data[4])
   Data<- reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
   RESPONSE<-c("PASS")
@@ -136,8 +136,13 @@ Data5<-add_features(guide.set.scale, Data5)
 for(j in 1:nlevels(guide.set.scale$peptide)){
 Data.set[[j]]<-rbind(Data0[[j]],Data1[[j]],Data2[[j]],Data3[[j]],Data4[[j]],Data5[[j]])
 }
-Data.set<-cbind(Data.set[[1]], Data.set[[2]][,-c(1,6)], Data.set[[3]][,-c(1,6)], Data.set[[4]][,-c(1,6)],
-                        Data.set[[5]][,-c(1,6)], Data.set[[6]][,-c(1,6)], Data.set[[7]][,-c(1,6)], 
-                        Data.set[[8]][,-c(1,6)])
+Data.set<-cbind(Data.set[[1]], 
+                subset(Data.set[[j]],select = -c(RESPONSE,idfile)), 
+                subset(Data.set[[3]],select = -c(RESPONSE,idfile)),
+                subset(Data.set[[4]],select = -c(RESPONSE,idfile)),
+                subset(Data.set[[5]],select = -c(RESPONSE,idfile)),
+                subset(Data.set[[6]],select = -c(RESPONSE,idfile)),
+                subset(Data.set[[7]],select = -c(RESPONSE,idfile)),
+                subset(Data.set[[8]],select = -c(RESPONSE,idfile)))
 return(Data.set)
 }
