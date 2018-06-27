@@ -1,7 +1,5 @@
 simulate_disturbances <- function(guide.set.scale, sim.size){
 
-n<-sim.size#incontrol observations 
-
 Data0<-list() #storage for in-control observations 
 Data1<-list() #storage for logarithmic increase 
 Data2<-list() #storage for logarithmic decrease
@@ -18,13 +16,14 @@ Data.set<-list()
   
   #generate in-control observations
   source("sample_density_function.R")
+  source("add_feature.R")
 
   for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   
   Data<-data.frame(idfile=1:n,
-                   peptide=rep(levels(guide.set.scale$peptide)[j], n),
+                   peptide=rep(levels(guide.set.scale$peptide)[j], sim.size),
                    sample_data[1], sample_data[2], sample_data[3], sample_data[4])
   Data<- reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
   RESPONSE<-c("PASS")
@@ -38,8 +37,8 @@ Data0<-add_features(guide.set.scale, Data0)
 #Logarithmic increase in FWHM 
 for(j in 1:nlevels(guide.set$peptide)){
 Data<-c()
-sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
-for(i in 1:n){
+sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+for(i in 1:sim.size){
   Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1]+log(i,base=2)*IQR(sample_data[,1]), 
                        sample_data[i,2]+log(i,base=2)*IQR(sample_data[,2]),
@@ -50,7 +49,7 @@ Data<- as.data.frame(Data,stringsAsFactors = F)
 for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
 colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
 Data<-reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
-RESPONSE<-c(rep("FAIL",n))
+RESPONSE<-c(rep("FAIL",sim.size))
 Data<- cbind(Data,RESPONSE)
 Data1[[j]]<-Data
 }
@@ -59,8 +58,8 @@ Data1<-add_features(guide.set.scale, Data1)
 #Logarithmic decrease in FWHM 
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
-  for(i in 1:n){
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+  for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1]-log(i,base=2)*IQR(sample_data[,1]), 
                        sample_data[i,2]-log(i,base=2)*IQR(sample_data[,2]),
@@ -71,7 +70,7 @@ for(j in 1:nlevels(guide.set$peptide)){
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
   colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
   Data<-reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
-  RESPONSE<-c(rep("FAIL",n))
+  RESPONSE<-c(rep("FAIL",sim.size))
   Data<- cbind(Data,RESPONSE)
   Data2[[j]]<-Data
 }
@@ -80,8 +79,8 @@ Data2<-add_features(guide.set.scale, Data2)
 #generate out-of-control observations for a +2 IQR shift in Total.area---large shift
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
-  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],n),
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
                    sample_data[1]+2.0*IQR(sample_data[,1]), 
                    sample_data[2]+2.0*IQR(sample_data[,2]), 
                    sample_data[3]+2.0*IQR(sample_data[,3]), 
@@ -97,8 +96,8 @@ Data3<-add_features(guide.set.scale, Data3)
 #generate out-of-control observations for a -2 IQR shift in Total.area---large shift
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
-  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],n),
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
                    sample_data[1]-2.0*IQR(sample_data[,1]), 
                    sample_data[2]-2.0*IQR(sample_data[,2]), 
                    sample_data[3]-2.0*IQR(sample_data[,3]), 
@@ -115,19 +114,19 @@ Data4<-add_features(guide.set.scale, Data4)
 
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], n)
-  for(i in 1:n){
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
+  for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]+2*sin(2*pi*i/n), 
-                       sample_data[i,2]+2*sin(2*pi*i/n), 
-                       sample_data[i,3]+2*sin(2*pi*i/n),
-                       sample_data[i,4]+2*sin(2*pi*i/n)))
+                       sample_data[i,1]+2*sin(2*pi*i/sim.size), 
+                       sample_data[i,2]+2*sin(2*pi*i/sim.size), 
+                       sample_data[i,3]+2*sin(2*pi*i/sim.size),
+                       sample_data[i,4]+2*sin(2*pi*i/sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
   colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
   Data<-reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
-  RESPONSE<-c(rep("FAIL",n))
+  RESPONSE<-c(rep("FAIL",sim.size))
   Data<- cbind(Data,RESPONSE)
   Data5[[j]]<-Data
 }
@@ -137,5 +136,8 @@ Data5<-add_features(guide.set.scale, Data5)
 for(j in 1:nlevels(guide.set.scale$peptide)){
 Data.set[[j]]<-rbind(Data0[[j]],Data1[[j]],Data2[[j]],Data3[[j]],Data4[[j]],Data5[[j]])
 }
+Data.set<-cbind(Data.set[[1]], Data.set[[2]][,-c(1,6)], Data.set[[3]][,-c(1,6)], Data.set[[4]][,-c(1,6)],
+                        Data.set[[5]][,-c(1,6)], Data.set[[6]][,-c(1,6)], Data.set[[7]][,-c(1,6)], 
+                        Data.set[[8]][,-c(1,6)])
 return(Data.set)
 }

@@ -17,8 +17,8 @@ add_features<-function(guide.set.scale, temp.Data){
       MR[k] <- abs(temp.Data[[j]][k,i]-temp.Data[[j]][(k-1),i])
       v[k] <- (sqrt(abs(temp.Data[[j]][k,i]))-0.822)/0.349
       CUSUMpoz.m[k] <- max(0,(temp.Data[[j]][k,i]-(d)+CUSUMpoz.m[k-1]))
-      CUSUMneg.m[k] <- max(0,((-d)-temp.Data[[j]][k,i]+CUSUMneg.m[k-1]))
-      CUSUMpoz.v[k] <- max(0,(v[k]-(k)+CUSUMpoz.v[k-1]))
+      CUSUMneg.m[k] <- max(0,(-d-temp.Data[[j]][k,i]+CUSUMneg.m[k-1]))
+      CUSUMpoz.v[k] <- max(0,(v[k]-d+CUSUMpoz.v[k-1]))
     }
     addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
     colnames(addfeatures) <- paste(colnames(temp.Data[[j]])[i], colnames(addfeatures), sep = ".")
