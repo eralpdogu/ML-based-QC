@@ -32,14 +32,14 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   
   ###Splitting Test & Train Data #######################################################################
   ## 75% of the sample size
-  smp_size <- floor(0.8 * nrow(Data.set[[j]]))
+  smp_size <- floor(0.8 * nrow(Data.set))
   
   ## set the seed to make your partition reproducible
   set.seed(123)
-  train_ind <- sample(seq_len(nrow(Data.set[[j]])), size = smp_size)
+  train_ind <- sample(seq_len(nrow(Data.set)), size = smp_size)
   
-  train <- Data.set[[j]][train_ind,]
-  test <- Data.set[[j]][-train_ind,]
+  train <- Data.set[train_ind,]
+  test <- Data.set[-train_ind,]
 
   #############Classification########################################################################
   if(method=="randomforest" & all_features == T){
@@ -60,8 +60,8 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
     print("Random Forest: Test Data using all features :")
     confusionMatrix(as.factor(test$RESPONSE), Predict,positive='FAIL')
     
-    explainer <- lime(subset(train,select = -c(RESPONSE)), fit_all)
-    explanation <- explain(subset(test,select = -c(RESPONSE)), explainer, n_labels = 1, n_features = 2)
+    explainer <- lime(subset(train,select = -c(RESPONSE, idfile)), fit_all)
+    explanation <- explain(subset(test,select = -c(RESPONSE, idfile)), explainer, n_labels = 1, n_features = 2)
     plot_features(explanation[75:80,])
     
   }
@@ -82,7 +82,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
     Predict<-predict(fit, test)
     Predict.prob<-predict(fit, test, type="prob")
     print("Random Forest: Test Data using limited features :")
-    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='NOGO')
+    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='FAIL')
     
     explainer <- lime(Train.set[2:5], fit)
     explanation <- explain(Test.set[1:4], explainer, n_labels = 1, n_features = 2)
