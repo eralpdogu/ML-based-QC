@@ -5,8 +5,7 @@
 #' @param peptide the name of peptide of interest.
 #' @param method the method used to model. Two values can be assigned, "randomforest" or "neuralnetwork".
 #' @export
-#' @import caret pdp ggplot2 MASS dplyr lime
-#' @import h2o 
+#' @import caret pdp ggplot2 MASS dplyr lime h2o 
 #' @examples
 #' # First process the data to make sure it's ready to use
 #' sampleData <- MSstatsQC::DataProcess(S9Site54)
