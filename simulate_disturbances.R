@@ -34,7 +34,7 @@ Data.set<-list()
 Data0<-add_features(guide.set.scale, Data0)
 
 #generate out-of-control observations
-#Logarithmic increase in FWHM 
+#Logarithmic increase 
 for(j in 1:nlevels(guide.set$peptide)){
 Data<-c()
 sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
@@ -55,7 +55,7 @@ Data1[[j]]<-Data
 }
 Data1<-add_features(guide.set.scale, Data1)
 
-#Logarithmic decrease in FWHM 
+#Logarithmic decrease 
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
@@ -76,7 +76,7 @@ for(j in 1:nlevels(guide.set$peptide)){
 }
 Data2<-add_features(guide.set.scale, Data2)
 
-#generate out-of-control observations for a +2 IQR shift in Total.area---large shift
+#generate out-of-control observations for a positive shift 
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
@@ -93,7 +93,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
 }
 Data3<-add_features(guide.set.scale, Data3)
 
-#generate out-of-control observations for a -2 IQR shift in Total.area---large shift
+#generate out-of-control observations for a negative shift
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
@@ -110,7 +110,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
 }
 Data4<-add_features(guide.set.scale, Data4)
 
-#Cyclic pattern in MassAccu
+#Cyclic pattern 
 
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
