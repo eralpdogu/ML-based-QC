@@ -80,7 +80,7 @@ Data2<-add_features(guide.set.scale, Data2)
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
-  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
+  Data<-data.frame(idfile=1:sim.size,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
                    sample_data[1]+2.0*IQR(sample_data[,1]), 
                    sample_data[2]+2.0*IQR(sample_data[,2]), 
                    sample_data[3]+2.0*IQR(sample_data[,3]), 
@@ -97,7 +97,7 @@ Data3<-add_features(guide.set.scale, Data3)
 for(j in 1:nlevels(guide.set.scale$peptide)){
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
-  Data<-data.frame(idfile=1:n,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
+  Data<-data.frame(idfile=1:sim.size,peptide=rep(levels(guide.set.scale$peptide)[j],sim.size),
                    sample_data[1]-2.0*IQR(sample_data[,1]), 
                    sample_data[2]-2.0*IQR(sample_data[,2]), 
                    sample_data[3]-2.0*IQR(sample_data[,3]), 
