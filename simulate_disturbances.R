@@ -18,7 +18,7 @@ Data.set<-list()
   source("sample_density_function.R")
   source("add_features.R")
 
-  for(j in 1:nlevels(guide.set.scale$peptide)){
+  for(j in 1:nlevels(guide.set.scale$peptide)){ 
   Data<-c()
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size*6)
   
