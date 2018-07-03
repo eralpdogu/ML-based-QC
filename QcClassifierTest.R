@@ -24,10 +24,33 @@ QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
   if(!is.data.frame(Test.set)){
     stop(Test.set)
   }
+  setwd("/Users/ed/Dropbox/2. MSstatsQC Paper 2-QCloud")
+  Test.set <- read.csv('test_lumos_QCloud_DDA_paper.csv')
+  colnames(Test.set)[2]<-"peptide"
   
   Test.set$peptide<-as.factor(Test.set$peptide)
- 
-  Test.set<-reshape(Test.set, idvar = "idfile", timevar = "peptide", direction = "wide")
+  Test.set.scale<-cbind(Test.set[,c(1,2)],scale(Test.set[,-c(1:2)]))
+  
+  temp.Data<-list()
+  for (j in 1:nlevels(Test.set.scale$peptide)){
+    temp.Data[[j]]<-Test.set.scale[Test.set.scale$peptide==levels(Test.set.scale$peptide)[j],]
+    temp.Data[[j]]<- reshape(temp.Data[[j]], idvar = "idfile", timevar = "peptide", direction = "wide")
+  }
+  
+  Data.set<-add_features(Test.set.scale,temp.Data)
+  Test.set<-cbind(Data.set[[1]], 
+                  subset(Data.set[[2]],select = -c(idfile)), 
+                  subset(Data.set[[3]],select = -c(idfile)),
+                  subset(Data.set[[4]],select = -c(idfile)),
+                  subset(Data.set[[5]],select = -c(idfile)),
+                  subset(Data.set[[6]],select = -c(idfile)),
+                  subset(Data.set[[7]],select = -c(idfile)),
+                  subset(Data.set[[8]],select = -c(idfile)))
+  
+  Test.set["RESPONSE"] <- NA
+  Test.set<-Test.set[ , order(names(Test.set))]
+  
+  Predict<-predict(fit_all, Test.set)
   
   #############Classification########################################################################
   if(method="randomforest"){

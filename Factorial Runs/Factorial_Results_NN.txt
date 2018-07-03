@@ -1,4 +1,4 @@
-"RUN","A","B","C","D","E","Run label","Overall error rate","False positives","False negatives","Method"
+"RUN","A","B","C","D","E","Run label","Accuracy","False positives","False negatives","Method"
 1,1,"-","-","-","-","+","e",98.5,0.0163766632548618,0.0136852394916911,"NN"
 2,2,"+","-","-","-","-","a",99.25,0.0081799591002045,0.00684931506849315,"NN"
 3,3,"-","+","-","-","-","b",99.6,0.00715746421267894,0.000978473581213307,"NN"

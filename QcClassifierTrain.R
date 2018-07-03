@@ -38,8 +38,11 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   train_ind <- sample(seq_len(nrow(Data.set)), size = smp_size)
   
   train <- Data.set[train_ind,]
+  train<-train[ , order(names(train))]
+  
   test <- Data.set[-train_ind,]
-
+  test[ , order(names(test))]
+  
   #############Classification########################################################################
   if(method=="randomforest" & all_features == T){
   #RF model
