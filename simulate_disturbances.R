@@ -137,7 +137,7 @@ for(j in 1:nlevels(guide.set.scale$peptide)){
 Data.set[[j]]<-rbind(Data0[[j]],Data1[[j]],Data2[[j]],Data3[[j]],Data4[[j]],Data5[[j]])
 }
 Data.set<-cbind(Data.set[[1]], 
-                subset(Data.set[[j]],select = -c(RESPONSE,idfile)), 
+                subset(Data.set[[2]],select = -c(RESPONSE,idfile)), 
                 subset(Data.set[[3]],select = -c(RESPONSE,idfile)),
                 subset(Data.set[[4]],select = -c(RESPONSE,idfile)),
                 subset(Data.set[[5]],select = -c(RESPONSE,idfile)),
