@@ -24,10 +24,6 @@ QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
   if(!is.data.frame(Test.set)){
     stop(Test.set)
   }
-  setwd("/Users/ed/Dropbox/2. MSstatsQC Paper 2-QCloud")
-  Test.set <- read.csv('test_lumos_QCloud_DDA_paper.csv')
-  colnames(Test.set)[2]<-"peptide"
-  #Test.set<-Test.set[complete.cases(Test.set),]
   
   Test.set$peptide<-as.factor(Test.set$peptide)
   Test.set.scale<-cbind(Test.set[,c(1,2)],scale(Test.set[,-c(1:2)]))
@@ -48,14 +44,13 @@ QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
                   subset(Data.set[[7]],select = -c(idfile)),
                   subset(Data.set[[8]],select = -c(idfile)))
   
-  Predict<-predict(fit_all, Test.set, type="prob")
+  Predict.prob<-predict(fit_all, Test.set, type="prob")
   Predict<-predict(fit_all, Test.set)
   
   explainer <- lime(train, fit_all)
   explanation <- explain(subset(Test.set,select = -c(idfile)), explainer, n_labels = 1, n_features = 2)
   plot_features(explanation)
   
-
   #############Classification########################################################################
   if(method="randomforest"){
   

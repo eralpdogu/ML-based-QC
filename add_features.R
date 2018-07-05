@@ -19,7 +19,7 @@ add_features<-function(guide.set.scale, temp.Data){
       CUSUMneg.m[k] <- max(0,(-d-temp.Data[[j]][k,i]+CUSUMneg.m[k-1]))
       CUSUMpoz.v[k] <- max(0,(v[k]-d+CUSUMpoz.v[k-1]))
     }
-    addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMpoz.v)
+    addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m, CUSUMpoz.v)
     colnames(addfeatures) <- paste(colnames(temp.Data[[j]])[i], colnames(addfeatures), sep = ".")
     temp.Data[[j]]<-cbind(temp.Data[[j]],addfeatures) # full dataset with external features
   }
