@@ -20,10 +20,10 @@ Data.set<-list()
 
   for(j in 1:nlevels(guide.set.scale$peptide)){ 
   Data<-c()
-  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size*6)
+  sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size*5)
   
-  Data<-data.frame(idfile=1:(6*sim.size),
-                   peptide=rep(levels(guide.set.scale$peptide)[j], (6*sim.size)),
+  Data<-data.frame(idfile=1:(5*sim.size),
+                   peptide=rep(levels(guide.set.scale$peptide)[j], (5*sim.size)),
                    sample_data[1], sample_data[2], sample_data[3], sample_data[4])
   Data<- reshape(Data, idvar = "idfile", timevar = "peptide", direction = "wide")
   RESPONSE<-c("PASS")
