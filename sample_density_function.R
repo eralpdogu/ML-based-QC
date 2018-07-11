@@ -14,10 +14,10 @@ sample_density <- function(guide.set.scale,peptide, n){
   sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
   
   sample_data <- data.frame(sim.sample.RT,sim.sample.TotalArea,sim.sample.MassAccu, sim.sample.FWHM)
-  names(sample_data) <- c(colnames(guide.set.scale)[3],
-                          colnames(guide.set.scale)[4],
-                          colnames(guide.set.scale)[5],
-                          colnames(guide.set.scale)[6])
+  names(sample_data) <- c(paste(colnames(guide.set.scale)[3],peptide,sep = "."),
+                          paste(colnames(guide.set.scale)[4],peptide,sep = "."),
+                          paste(colnames(guide.set.scale)[5],peptide,sep = "."),
+                          paste(colnames(guide.set.scale)[6],peptide,sep = "."))
   
   return(sample_data)
 }

@@ -11,7 +11,7 @@ ml_algo <- function(data,num_run){
   test <- data[-train_ind,]
   
   
-  dir.create(paste("Factorial_Rf_Runs/",num_run,sep = ""))
+  #dir.create(paste("Factorial_Rf_Runs/",num_run,sep = ""))
   
   
   
@@ -61,16 +61,19 @@ ml_algo <- function(data,num_run){
   ###############################################################################
   summary(rf_model)  
   
-  h2o.saveModel(rf_model, path = paste("Factorial_Rf_Runs/",num_run,sep = ""))
-  png(filename=paste("Factorial_Rf_Runs/",num_run,"/",num_run,".png",sep = ""))
-  plot(rf_model)
+  
+  #h2o.shutdown(prompt = F)
+  return(rf_model) 
+}
+  
+  #h2o.saveModel(rf_model, path = paste("Factorial_Rf_Runs/",num_run,sep = ""))
+  #png(filename=paste("Factorial_Rf_Runs/",num_run,"/",num_run,".png",sep = ""))
+  #plot(rf_model)
 
-  dev.off()
+  #dev.off()
   
-  h2o.shutdown(prompt = F)
-  
-  return(rf_model)
-  
+  #h2o.shutdown(prompt = F)
+
   
   # #Neural Network ################################################################################
   # #launch h2o cluster
@@ -116,7 +119,7 @@ ml_algo <- function(data,num_run){
   # 
   # h2o.shutdown(prompt = F)
   # 
-  # return(dl_model)
+  #return(dl_model)
   
-}
+
 
