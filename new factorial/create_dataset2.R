@@ -2,7 +2,7 @@ library(readxl)
 library(h2o)
 library(caret)
 library(MASS)
-library(ggplot2)
+library(reshape)
 
 factorial <- read_xlsx("factorial.xlsx",sheet = 1)
 

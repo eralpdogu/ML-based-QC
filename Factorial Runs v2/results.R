@@ -20,9 +20,3 @@ g<-ggplot2::ggplot(aes(y=False.negatives,x=RUN), data=results_RF)+geom_point()
 g+xlab("Simulation Run #")
 g+xlab("False negative rate")
 g+geom_smooth()
-
-df_melt <- melt(results_RF[,c(1,8:10)],id.vars ="RUN")
-ggplot(df_melt, aes(RUN, variable)) + 
-  geom_tile(aes(fill = value), colour = "white") +
-  labs(x = "Simulation run ID",y = "Performance measures")+
-  scale_fill_gradient(low = "white", high = "red",name = "") 
