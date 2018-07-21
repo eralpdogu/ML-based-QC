@@ -18,7 +18,6 @@ Data14<-list()
 Data15<-list()
 Data16<-list()
 Data.set<-list()
-beta=0.0001
   #Peptide :- Name of the peptide
   #convert input peptide to character (input without quotes)
   #peptide = as.character(substitute(Peptide))
@@ -47,10 +46,11 @@ Data0<-add_features(guide.set.scale, Data0)
 #Monotonic increase in RT
 for(j in 1:nlevels(guide.set$peptide)){
 Data<-c()
+beta=runif(1,0,3)
 sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
 for(i in 1:sim.size){
   Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2],
                        sample_data[i,3],
                        sample_data[i,4]))
@@ -68,6 +68,7 @@ Data1<-add_features(guide.set.scale, Data1)
 #Monotonic increase in Total Area
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
@@ -89,6 +90,7 @@ Data2<-add_features(guide.set.scale, Data2)
 #Monotonic increase in Mass Accu
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
@@ -110,6 +112,7 @@ Data3<-add_features(guide.set.scale, Data3)
 #generate out-of-control observations for a negative shift
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
@@ -132,6 +135,7 @@ Data4<-add_features(guide.set.scale, Data4)
 
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
@@ -153,10 +157,11 @@ Data5<-add_features(guide.set.scale, Data5)
 #RUN 5: AB
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3],
                        sample_data[i,4]))
@@ -174,10 +179,11 @@ Data6<-add_features(guide.set.scale, Data6)
 #RUN 6: AC
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2], 
                        sample_data[i,3]+beta*(i-sim.size),
                        sample_data[i,4]))
@@ -195,11 +201,12 @@ Data7<-add_features(guide.set.scale, Data7)
 #RUN 7: BC
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1], 
-                       sample_data[i,2]-beta*(i-sim.size), 
+                       sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3]+beta*(i-sim.size),
                        sample_data[i,4]))
   }
@@ -216,10 +223,11 @@ Data8<-add_features(guide.set.scale, Data8)
 #RUN 8: ABC
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3]+beta*(i-sim.size),
                        sample_data[i,4]))
@@ -237,6 +245,7 @@ Data9<-add_features(guide.set.scale, Data9)
 #RUN 10: AD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
@@ -258,13 +267,14 @@ Data10<-add_features(guide.set.scale, Data10)
 #RUN 11: BD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1], 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3],
-                       sample_data[i,4]-beta*(i-sim.size)))
+                       sample_data[i,4]+beta*(i-sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
@@ -279,13 +289,14 @@ Data11<-add_features(guide.set.scale, Data11)
 #RUN 12: ABD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3],
-                       sample_data[i,4]-beta*(i-sim.size)))
+                       sample_data[i,4]+beta*(i-sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
@@ -300,13 +311,14 @@ Data12<-add_features(guide.set.scale, Data12)
 #RUN 13: CD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1], 
                        sample_data[i,2], 
                        sample_data[i,3]+beta*(i-sim.size),
-                       sample_data[i,4]-beta*(i-sim.size)))
+                       sample_data[i,4]+beta*(i-sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
@@ -321,10 +333,11 @@ Data13<-add_features(guide.set.scale, Data13)
 #RUN 14: ACD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
-                       sample_data[i,1]-beta*(i-sim.size), 
+                       sample_data[i,1]+beta*(i-sim.size), 
                        sample_data[i,2], 
                        sample_data[i,3]+beta*(i-sim.size),
                        sample_data[i,4]-beta*(i-sim.size)))
@@ -342,13 +355,14 @@ Data14<-add_features(guide.set.scale, Data14)
 #RUN 15: BCD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1], 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3]+beta*(i-sim.size),
-                       sample_data[i,4]-beta*(i-sim.size)))
+                       sample_data[i,4]+beta*(i-sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
@@ -363,13 +377,14 @@ Data15<-add_features(guide.set.scale, Data15)
 #RUN 16: ABCD
 for(j in 1:nlevels(guide.set$peptide)){
   Data<-c()
+  beta=runif(1,0,3)
   sample_data <- sample_density(guide.set.scale,guide.set.scale$peptide[j], sim.size)
   for(i in 1:sim.size){
     Data<-rbind(Data,c(i,rep(levels(guide.set.scale$peptide)[j],1),
                        sample_data[i,1], 
                        sample_data[i,2]+beta*(i-sim.size), 
                        sample_data[i,3]+beta*(i-sim.size),
-                       sample_data[i,4]-beta*(i-sim.size)))
+                       sample_data[i,4]+beta*(i-sim.size)))
   }
   Data<- as.data.frame(Data,stringsAsFactors = F)
   for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric(Data[,i])}
