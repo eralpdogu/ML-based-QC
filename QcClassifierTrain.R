@@ -27,7 +27,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   j<-which(levels(guide.set.scale$peptide)==peptide)
   
   ###########Simulation#############################################################################
-  Data.set<-simulate_disturbances(guide.set.scale, sim.size=500)
+  Data.set<-simulate_disturbances(guide.set.scale, sim.size=25)
   
   ###Splitting Test & Train Data #######################################################################
   ## 75% of the sample size
@@ -46,7 +46,6 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
     print("Random Forest: Train Data using all features :")
     fit_all <- train(y=train[,"RESPONSE"],x=subset(train,select = -c(RESPONSE,idfile)), 
                  method="rf",
-                 preProcess = c("center", "scale", "nzv"),
                  tuneGrid = data.frame( mtry=floor(sqrt(ncol(train))) )) # change mtry as square root of number of predictors
   
     print(fit_all$results)
