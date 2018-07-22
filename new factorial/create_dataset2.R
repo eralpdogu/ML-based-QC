@@ -195,13 +195,13 @@ df_melt <- melt(fp,id.vars = "sim_size")
 ggplot(df_melt, aes(sim_size, variable)) + 
   geom_tile(aes(fill = value), colour = "white") +
   labs(x = "Simulation Size(10x)",y = "Percentage of rows in Guide Set")+
-  scale_fill_gradient(low = "white", high = "blue",name = "False Positives") 
+  scale_fill_gradient(low = "white", high = "red",name = "False Positives") 
 
 fn$sim_size <- row.names(fn)
 df_melt <- melt(fp,id.vars = "sim_size")
 ggplot(df_melt, aes(sim_size, variable)) + 
   geom_tile(aes(fill = value), colour = "white") +
   labs(x = "Simulation Size(10x)",y = "Percentage of rows in Guide Set")+
-  scale_fill_gradient(low = "white", high = "blue",name = "False Negatives") 
+  scale_fill_gradient(low = "white", high = "red",name = "False Negatives") 
 
 
