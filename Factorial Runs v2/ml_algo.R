@@ -44,7 +44,7 @@ ml_algo <- function(data,num_run){
   rf_model <- h2o.randomForest(         ## h2o.randomForest function
     training_frame = train_h2o,        ## the H2O frame for training
     validation_frame = test_h2o,      ## the H2O frame for validation (not required)
-    x= colnames(train_h2o[,c(2:5,7:102)]),
+    x= colnames(train_h2o[,c(1:4,5:161)]),
     y= "RESPONSE",
     model_id = "rf_model",    ## name the model in H2O
     ntrees = 200,                  ##   not required, but helps use Flow

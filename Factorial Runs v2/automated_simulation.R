@@ -17,6 +17,20 @@ in_peptides <-  levels(guide.set.scale$peptide)[!levels(guide.set.scale$peptide)
 tag_neg <- 0
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){
+  if(i == 2){
+    sample_data<- list()
+    ###### In cntrol observation ~ 5* sim size  the of the actual 
+    for(k in 1:nlevels(guide.set.scale$peptide)){ 
+      sample_data_k <- sample_density(guide.set.scale,levels(guide.set.scale$peptide)[k], sim.size*15)
+      colnames(sample_data_k)<- paste(levels(guide.set.scale$peptide)[k],colnames(sample_data_k),sep = ".")
+      sample_data_k <- cbind(peptide=rep(levels(guide.set.scale$peptide)[k],sim.size),
+                             sample_data_k,
+                             RESPONSE= c("PASS"))
+      sample_data[[k]] <- sample_data_k
+    }
+    
+  }
+  else{
     sample_data<- list()
     ###### In cntrol observation ~ 5* sim size  the of the actual 
     for(k in 1:nlevels(guide.set.scale$peptide)){ 
@@ -40,7 +54,7 @@ for(i in 2:nrow(factorial)){
               runif(1,-2,2)*IQR(sample_data[[k]][[paste(sample_data[[k]]$peptide[1],"RT",sep = ".")]])
             tag_neg <- 1 
           }
-            
+          
         }
       }
       
@@ -86,31 +100,27 @@ for(i in 2:nrow(factorial)){
         }
       }
     }# column ends 
-    data.set <- do.call("cbind",add_features(guide.set.scale,  sample_data))
-    data.set <- data.set[, !duplicated(colnames(data.set))]
-    data.set[,"peptide"] <- NULL 
-    if(tag_neg == 1){
-      data.set[,"RESPONSE"] = rep("FAIL",sim.size)
-    }
-    tag_neg <- 0
-    data <-rbind(data,data.set)
-    
-}
-    data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
-    
-    
-    
-    dl_model <- ml_algo(data,i)
-    
-    
-    
-    cf<- data.frame(h2o.confusionMatrix(dl_model,valid = T),stringsAsFactors = F)
-    factorial[i,"Overall error rate"] <- (1-cf[3,3])*100
-    factorial[i,"False positives"] <- cf[2,3]
-    factorial[i,"False negatives"] <- cf[1,3]
-    write.csv(factorial, file = paste("factorial_guideset_",nrow(guide.set.scale),"_",sim.size,".csv",sep = ""))
-    
-  } 
   }
-  
+    
+  data.set <- do.call("cbind",add_features(guide.set.scale,  sample_data))
+  data.set <- data.set[, !duplicated(colnames(data.set))]
+  data.set[,"peptide"] <- NULL 
+  if(tag_neg == 1){
+      data.set[,"RESPONSE"] = rep("FAIL",sim.size)
+  }
+  tag_neg <- 0
+  data <-rbind(data,data.set)
+    
 }
+
+data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
+    
+    
+    
+dl_model <- ml_algo(data,i)
+    
+summary(dl_model)    
+    
+cf<- data.frame(h2o.confusionMatrix(dl_model,valid = T),stringsAsFactors = F)
+  
+
