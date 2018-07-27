@@ -24,7 +24,7 @@ simulate_test_data <- function(guide.set.scale, sim.size, beta){
     Data <- cbind(Data,RESPONSE)
     Data0[[j]]<-Data
   }
-  Data0<-add_features(guide.set.scale, Data0)
+  Data0<-add_features(guide.set.scale, Data0, pep.index = 1:num.pep)
   
   #generate out-of-control observations
   #Monotonic increase in RT
@@ -46,7 +46,7 @@ simulate_test_data <- function(guide.set.scale, sim.size, beta){
     Data<- cbind(Data,RESPONSE)
     Data1[[j]]<-Data
   }
-  Data1<-add_features(guide.set.scale, Data1)
+  Data1<-add_features(guide.set.scale, Data1, pep.index = 1:num.pep)
   
   #Merge all types of disturbances + in-control observations
   for(j in 1:nlevels(guide.set.scale$peptide)){

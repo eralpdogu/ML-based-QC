@@ -27,7 +27,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   j<-which(levels(guide.set.scale$peptide)==peptide)
   
   ###########Simulation#############################################################################
-  Data.set<-simulate_disturbances(guide.set.scale, sim.size=100)
+  Data.set<-simulate_disturbances(guide.set.scale, sim.size=25)
   
   ###Splitting Test & Train Data #######################################################################
   ## 75% of the sample size
@@ -38,7 +38,7 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   train_ind <- sample(seq_len(nrow(Data.set)), size = smp_size)
 
   train <- Data.set[train_ind,]
-  test <- simulate_test_data(guide.set.scale, sim.size=20, beta = 1.5)
+  test <- simulate_test_data(guide.set.scale, sim.size=25, beta = 1)
   #test <- Data.set[-train_ind,]
   
   #############Classification########################################################################
@@ -54,20 +54,17 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
     #print("Variable Importance")
     #plot(varImp(fit_all))
   
-    predict(fit_all, test)
-    predict(fit_all, test, type="prob")
+    Predict<-predict(fit_all, test)
+    Predict.prob <- predict(fit_all, test, type="prob")
     #print("Random Forest: Test Data using all features :")
-    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='FAIL')
+    confusionMatrix(as.factor(test$RESPONSE), Predict, positive='FAIL')
     
     explainer <- lime(subset(train,select = -c(RESPONSE, idfile)), fit_all)
     explanation <- explain(subset(test,select = -c(RESPONSE, idfile)), explainer, n_labels = 1, n_features = 2)
-    plot_features(explanation[41:80,])
-    
-    
-    
-    
-    
-  }
+    plot_features(explanation[71:80,])
+}
+
+
   else if(method=="randomforest" & all_features == F){
     #RF model
     print("Random Forest: Train Data using limited features :")
