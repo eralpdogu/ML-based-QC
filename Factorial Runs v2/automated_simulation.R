@@ -5,7 +5,8 @@ library(MASS)
 
 factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
 
-source("auto+add_features.R")
+
+source("add_features.R")
 source("ml_algo.R")
 
 sim.size = 100
@@ -17,10 +18,10 @@ tag_neg <- 0
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){
     sample_data<- list()
-    ###### in control base data
+    ###### In cntrol observation ~ 5* sim size  the of the actual 
     for(k in 1:nlevels(guide.set.scale$peptide)){ 
       sample_data_k <- sample_density(guide.set.scale,levels(guide.set.scale$peptide)[k], sim.size)
-      colnames(sample_data_k) <- paste(levels(guide.set.scale$peptide)[k],colnames(sample_data_k),sep = ".")
+      colnames(sample_data_k)<- paste(levels(guide.set.scale$peptide)[k],colnames(sample_data_k),sep = ".")
       sample_data_k <- cbind(peptide=rep(levels(guide.set.scale$peptide)[k],sim.size),
                              sample_data_k,
                              RESPONSE= c("PASS"))
