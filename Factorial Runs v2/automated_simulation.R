@@ -117,7 +117,7 @@ data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
     
     
     
-dl_model <- ml_algo(data,i)
+dl_model <- ml_algo(data)
     
 summary(dl_model)    
     
