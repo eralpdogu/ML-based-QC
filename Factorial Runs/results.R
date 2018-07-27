@@ -26,3 +26,4 @@ ggplot(df_melt, aes(RUN, variable)) +
   geom_tile(aes(fill = value), colour = "white") +
   labs(x = "Simulation run ID",y = "Performance measures")+
   scale_fill_gradient(low = "white", high = "red",name = "") 
+

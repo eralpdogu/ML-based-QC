@@ -36,33 +36,35 @@ QcClassifierTrain <- function(guide.set, peptide,method,all_features, sim.size){
   ## set the seed to make your partition reproducible
   set.seed(123)
   train_ind <- sample(seq_len(nrow(Data.set)), size = smp_size)
-  
+
   train <- Data.set[train_ind,]
-  test <- Data.set[-train_ind,]
+  test <- simulate_test_data(guide.set.scale, sim.size=25, beta = 1)
+  #test <- Data.set[-train_ind,]
   
   #############Classification########################################################################
-  if(method=="randomforest" & all_features == T){
-  #RF model
-    print("Random Forest: Train Data using all features :")
+
+    #print("Random Forest: Train Data using all features :")
     fit_all <- train(y=train[,"RESPONSE"],x=subset(train,select = -c(RESPONSE,idfile)), 
                  method="rf",
+                 preProcess=c('zv'),
                  tuneGrid = data.frame( mtry=floor(sqrt(ncol(train))) )) # change mtry as square root of number of predictors
   
-    print(fit_all$results)
-  #Model agnostics
-    print("Variable Importance")
-    plot(varImp(fit_all))
+    #print(fit_all$results)
+    #Model agnostics
+    #print("Variable Importance")
+    #plot(varImp(fit_all))
   
     Predict<-predict(fit_all, test)
-    Predict.prob<-predict(fit_all, test, type="prob")
-    print("Random Forest: Test Data using all features :")
-    confusionMatrix(as.factor(test$RESPONSE), Predict,positive='FAIL')
+    Predict.prob <- predict(fit_all, test, type="prob")
+    #print("Random Forest: Test Data using all features :")
+    confusionMatrix(as.factor(test$RESPONSE), Predict, positive='FAIL')
     
     explainer <- lime(subset(train,select = -c(RESPONSE, idfile)), fit_all)
     explanation <- explain(subset(test,select = -c(RESPONSE, idfile)), explainer, n_labels = 1, n_features = 2)
-    plot_features(explanation[75:80,])
-    
-  }
+    plot_features(explanation[71:80,])
+}
+
+
   else if(method=="randomforest" & all_features == F){
     #RF model
     print("Random Forest: Train Data using limited features :")

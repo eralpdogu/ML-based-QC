@@ -1,5 +1,5 @@
-add_features<-function(guide.set.scale, temp.Data){
-  for(j in 1:nlevels(guide.set.scale$peptide)){
+add_features<-function(guide.set.scale, temp.Data, pep.index){
+  for(j in pep.index){
   for(i in 2:5){
     v <- numeric(length(temp.Data[[j]][,i]))
     MR <- numeric(length(temp.Data[[j]][,i]))
