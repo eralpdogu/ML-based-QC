@@ -1,5 +1,5 @@
 add_features<-function(temp.Data){
-    for(i in 2:5){
+    for(i in 1:4){
       v <- numeric(length(temp.Data[,i]))
       MR <- numeric(length(temp.Data[,i]))
       CUSUMpoz.m <- numeric(length(temp.Data[,i]))

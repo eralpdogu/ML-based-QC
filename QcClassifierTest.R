@@ -25,53 +25,50 @@ QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
     stop(Test.set)
   }
   
+  Test.set<-Data.set
   Test.set$peptide<-as.factor(Test.set$peptide)
-  Test.set.scale<-cbind(Test.set[,c(1,2)],scale(Test.set[,-c(1:2)]))
+  Results<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
+  Results_annotated<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
+
+  for(i in 1:nlevels(Test.set$peptide)){
+  Test.set.scale<-robust.scale(Test.set[Test.set$peptide==levels(Test.set$peptide)[i],3:6])
+  names(Test.set.scale) <- c("peptide.RT", "peptide.TotalArea", "peptide.MassAccu", "peptide.FWHM")
+  Test.set.scale <- add_features(Test.set.scale)
+  Test.set.scale.h2o <- as.h2o(Test.set.scale)
+  Predict<-as.data.frame(h2o.predict(rf_model, Test.set.scale.h2o, type="prob"))
+  Results[,i]<-Predict$FAIL
+  Results_annotated[,i]<-Predict$predict
+  colnames(Results)[i]<-levels(Test.set$peptide)[i]
+  colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
   
-  temp.Data<-list()
-  for (j in 1:nlevels(Test.set.scale$peptide)){
-    temp.Data[[j]]<-Test.set.scale[Test.set.scale$peptide==levels(Test.set.scale$peptide)[j],]
-    temp.Data[[j]]<- reshape(temp.Data[[j]], idvar = "idfile", timevar = "peptide", direction = "wide")
+  #explainer <- lime(train, rf_model)
+  #explanation <- explain(Test.set.scale, explainer, n_labels = 1, n_features = 2)
+  #plot_features(explanation[44:54,])
+  
   }
   
-  Data.set<-add_features(Test.set.scale,temp.Data)
-  Test.set<-cbind(Data.set[[1]], 
-                  subset(Data.set[[2]],select = -c(idfile)), 
-                  subset(Data.set[[3]],select = -c(idfile)),
-                  subset(Data.set[[4]],select = -c(idfile)),
-                  subset(Data.set[[5]],select = -c(idfile)),
-                  subset(Data.set[[6]],select = -c(idfile)),
-                  subset(Data.set[[7]],select = -c(idfile)),
-                  subset(Data.set[[8]],select = -c(idfile)))
+  Results<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results)
+  Results_annotated<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results_annotated)
   
-  Predict.prob<-predict(fit_all, Test.set, type="prob")
-  Predict<-predict(fit_all, Test.set)
+  Results_melt <- melt(Results_annotated[,c(1,5)],id.vars ="RUN")
+  colors <- c("red","blue")
+  g1<-ggplot(Results_melt, aes(RUN, variable)) + 
+    geom_tile(aes(fill = value), colour = "white") +
+    labs(x = "RUN",y = "Probability of FAIL")+
+    coord_equal()+
+    ylab("Overall")+
+    rotateTextX()+
+    scale_fill_manual(values=colors, name="Label")
   
-  explainer <- lime(train, fit_all)
-  explanation <- explain(subset(Test.set,select = -c(idfile)), explainer, n_labels = 1, n_features = 2)
-  plot_features(explanation)
+  Results_melt <- melt(Results,id.vars ="RUN")
+  g2<-ggplot(Results_melt, aes(RUN, variable)) + 
+    geom_tile(aes(fill = value), colour = "white") +
+    labs(x = "RUN",y = "Probability of FAIL")+
+    rotateTextX()+
+    removeGrid()+
+    scale_fill_gradient(low = "blue", high = "red",name = "Probability") 
   
-  #############Classification########################################################################
-  if(method="randomforest"){
-  
-  #RF model
-  fit<-QcClassifierTrain(QcClassifierTrain(guide.set, peptide = "LVNELTEFAK", method = "randomforest"))
-  
-  #Predict RF probabilities and measure performance
-  Predict.prob<-predict(fit, Test.set, type="prob")
-  }
-  
-  #NN model
-  else if(method="neuralnetwork"){
-  fit<-QcClassifierTrain(QcClassifierTrain(guide.set, peptide = "LVNELTEFAK", method = "randomforest"))
-  
-  #Predict NN probabilities and measure performance
-  #Predict.prob<-predict(fit, Test.set, type="prob")  
-  }
-    else{
-      
-      Print("Illegal Response")
-    }
+  grid.arrange(g1,g2)
 
 }
 
