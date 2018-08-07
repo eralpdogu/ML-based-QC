@@ -19,87 +19,68 @@ robust.scale<-function(sample_data_k){
   return(sample_data_k)
   }
 
-sim.size = 25
+sim.size = 100
 tag_neg <- 0
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){
   k = 4 # LVN 
+  data.set <- data.frame(NULL)
   if(i == 2){
     # ###### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*1000)
-      sample_data_k <- robust.scale(sample_data_k)
-      sample_data_k <- cbind(add_features(sample_data_k), RESPONSE= c("PASS"))
-      data<-rbind(sample_data_k)
+    sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*15)
+    sample_data_k <- robust.scale(sample_data_k)
   }
   
   else{
-    
+    ###### Base Data set to begin with 
+    sample_data_k <- sample_density(guide.set.scale,levels(guide.set.scale$peptide)[k], sim.size)
+    sample_data_k <- robust.scale(sample_data_k)
+    #colnames(sample_data_k)<- paste(levels(guide.set.scale$peptide)[k],colnames(sample_data_k),sep = ".")
+
     for(j in 2:5){
       #change in RT Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="RT drift"){ 
         beta=runif(sim.size,-3,3)
-        sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*100)
-        sample_data_k <- robust.scale(sample_data_k)
-        sample_data_k[[paste("peptide","RT",sep = ".")]] <- 
-        sample_data_k[[paste("peptide","RT",sep = ".")]] +
-            beta*mad(sample_data_k[[paste("peptide","RT",sep = ".")]])
-            sample_data_k <- cbind(add_features(sample_data_k),
-                                   RESPONSE= c("FAIL"))
-            data<-rbind(data, sample_data_k)
-            tag_neg <- 1 
+        sample_data_k$RT <- sample_data_k$RT + beta*mad(sample_data_k$RT)
+        tag_neg <- 1 
       }
+      
       #change in Total Area Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Total Area drift"){ 
         beta=runif(sim.size,-3,3)
-        sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*100)
-        sample_data_k <- robust.scale(sample_data_k)
-        sample_data_k[[paste("peptide","TotalArea",sep = ".")]] <- 
-          sample_data_k[[paste("peptide","TotalArea",sep = ".")]] +
-         beta*mad(sample_data_k[[paste("peptide","TotalArea",sep = ".")]])
-        sample_data_k <- cbind(add_features(sample_data_k),
-                               RESPONSE= c("FAIL"))
-        data<-rbind(data, sample_data_k)
+        sample_data_k$TotalArea <- sample_data_k$TotalArea + beta*mad(sample_data_k$TotalArea)
         tag_neg <- 1 
       }
        
       #change in Mass Accu Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Mass Accu drift"){ 
         beta=runif(sim.size,-3,3)
-        sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*100)
-        sample_data_k <- robust.scale(sample_data_k)
-        sample_data_k[[paste("peptide","MassAccu",sep = ".")]] <- 
-          sample_data_k[[paste("peptide","MassAccu",sep = ".")]] +
-        beta*mad(sample_data_k[[paste("peptide","MassAccu",sep = ".")]])
-        sample_data_k <- cbind(add_features(sample_data_k),
-                               RESPONSE= c("FAIL"))
-        data<-rbind(data, sample_data_k) 
+        sample_data_k$MassAccu <- sample_data_k$MassAccu +beta*mad(sample_data_k$MassAccu)
         tag_neg <- 1 
       }
       #change in FWHM Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="FWHM drift"){
         beta=runif(sim.size,-3,3)
-        sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*100)
-        sample_data_k <- robust.scale(sample_data_k)
-        sample_data_k[[paste("peptide","FWHM",sep = ".")]] <- 
-          sample_data_k[[paste("peptide","FWHM",sep = ".")]] +
-        beta*mad(sample_data_k[[paste("peptide","FWHM",sep = ".")]])
-        sample_data_k <- cbind(add_features(sample_data_k),
-                               RESPONSE= c("FAIL"))
-        data<-rbind(data, sample_data_k) 
+        sample_data_k$FWHM <- sample_data_k$FWHM +beta*mad(sample_data_k$FWHM)
         tag_neg <- 1 
       }
       
     }# column ends 
   }
-
-  # data.set[,"peptide"] <- NULL 
-  # if(tag_neg == 1){
-  #   data.set[,"RESPONSE"] = rep("FAIL",sim.size)
-  # }
-  # tag_neg <- 0
-  # data <-rbind(data,data.set)
-  
+  data.set <- rbind(data.set, add_features(sample_data_k))
+  #data.set[,"peptide"] <- NULL 
+  if(tag_neg == 1){
+    data.set$RESPONSE <- c("FAIL")
+    tag_neg <- 0
+  }
+  else{
+    data.set$RESPONSE <- c("PASS")
+  }
+  data <- data[,order(names(data))]
+  data.set <- data.set[,order(names(data.set))]
+  data <-rbind(data,data.set)
 }
+
 
 data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
 

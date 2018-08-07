@@ -14,7 +14,7 @@ sample_density <- function(guide.set, peptide, n){
   sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
   
   sample_data <- data.frame(sim.sample.RT,sim.sample.TotalArea,sim.sample.MassAccu, sim.sample.FWHM)
-  names(sample_data) <- c("peptide.RT", "peptide.TotalArea", "peptide.MassAccu", "peptide.FWHM")
+  names(sample_data) <- c("RT", "TotalArea", "MassAccu", "FWHM")
   
   return(sample_data)
 }
