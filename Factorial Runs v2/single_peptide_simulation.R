@@ -14,7 +14,7 @@ source("sample_density_function.R")
 guide.set$peptide <-as.factor(guide.set$peptide)
 robust.scale<-function(sample_data_k){
   for(i in 1:ncol(sample_data_k)){
-    sample_data_k[,i]=(sample_data_k[,i]-mean(sample_data_k[,i]))/sd(sample_data_k[,i])
+    sample_data_k[,i]=(sample_data_k[,i]-median(sample_data_k[,i]))/mad(sample_data_k[,i])
   }
   return(sample_data_k)
   }
@@ -23,19 +23,18 @@ sim.size = 100
 tag_neg <- 0
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){
-  k = 4 # LVN 
+  #k = 4 # LVN 
   data.set <- data.frame(NULL)
   if(i == 2){
     # ###### In cntrol observation ~ 5* sim size  the of the actual 
-    sample_data_k <- sample_density(guide.set,levels(guide.set$peptide)[k], sim.size*15)
+    sample_data_k <- sample_density(guide.set, sim.size*15)
     sample_data_k <- robust.scale(sample_data_k)
   }
   
   else{
     ###### Base Data set to begin with 
-    sample_data_k <- sample_density(guide.set.scale,levels(guide.set.scale$peptide)[k], sim.size)
+    sample_data_k <- sample_density(guide.set.scale, sim.size)
     sample_data_k <- robust.scale(sample_data_k)
-    #colnames(sample_data_k)<- paste(levels(guide.set.scale$peptide)[k],colnames(sample_data_k),sep = ".")
 
     for(j in 2:5){
       #change in RT Drift for some peptides
@@ -67,7 +66,7 @@ for(i in 2:nrow(factorial)){
       
     }# column ends 
   }
-  data.set <- rbind(data.set, add_features(sample_data_k))
+  data.set <- rbind(add_features(sample_data_k))
   #data.set[,"peptide"] <- NULL 
   if(tag_neg == 1){
     data.set$RESPONSE <- c("FAIL")
@@ -81,9 +80,8 @@ for(i in 2:nrow(factorial)){
   data <-rbind(data,data.set)
 }
 
-
 data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
-
+data$RESPONSE <- as.factor(data$RESPONSE)
 
 ## 80% of the sample size
 smp_size <- floor(0.8 * nrow(data))
