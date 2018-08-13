@@ -10,6 +10,7 @@
   #generate in-control observations
   source("sample_density_function.R")
   source("auto_add_features.R")
+  source("robust_scale.R")
 
   sample_density_sim <- function(guide.set, peptide, n){
     sample_data<-c()
@@ -33,7 +34,7 @@
   }
   
   beta=3
-  sim.size=50
+  sim.size=200
   for(j in 1:nlevels(guide.set$peptide)){ 
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
@@ -49,7 +50,7 @@
   
   #generate out-of-control observations
   #Monotonic increase in RT
-  for(j in 1:8){
+  for(j in 1:5){
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     
@@ -62,7 +63,7 @@
   }
   as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
   
-  for(j in 1:8){
+  for(j in 6:8){
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
@@ -72,10 +73,11 @@
                          sample_data[i,3],
                          sample_data[i,4]))
     }
+    Data<-cbind(Data[,1:3], sample_data[2], sample_data[3], sample_data[4])
     Data<- as.data.frame(Data,stringsAsFactor = F)
     
     colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
-    for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
+    #for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
     RESPONSE<-c(rep("FAIL",sim.size))
     Data<- cbind(Data,RESPONSE)
     Data1[[j]]<-Data
