@@ -34,7 +34,7 @@
   }
   
   beta=3
-  sim.size=200
+  sim.size=100
   for(j in 1:nlevels(guide.set$peptide)){ 
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
@@ -73,11 +73,9 @@
                          sample_data[i,3],
                          sample_data[i,4]))
     }
-    Data<-cbind(Data[,1:3], sample_data[2], sample_data[3], sample_data[4])
     Data<- as.data.frame(Data,stringsAsFactor = F)
-    
     colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
-    #for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
+    for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
     RESPONSE<-c(rep("FAIL",sim.size))
     Data<- cbind(Data,RESPONSE)
     Data1[[j]]<-Data

@@ -40,11 +40,12 @@
   #plot_features(explanation[48:50,])
   
   }
+  boxplot(Test.set.scale,horizontal = T, las=1, cex.axis = 0.5)
   
   Results<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results)
   Results_annotated<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results_annotated)
   
-  Results_melt <- melt(Results_annotated[,c(1,5)],id.vars ="RUN")
+  Results_melt <- melt(Results_annotated,id.vars ="RUN")
   colors <- c("red","blue")
   g1<-ggplot(Results_melt, aes(RUN, variable)) + 
     geom_tile(aes(fill = value), colour = "white") +
