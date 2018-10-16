@@ -19,7 +19,7 @@ robust.scale<-function(sample_data_k){
   return(sample_data_k)
   }
 
-sim.size = 100
+sim.size = 25
 tag_neg <- 0
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){

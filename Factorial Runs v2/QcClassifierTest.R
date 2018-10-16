@@ -21,12 +21,39 @@
   
   Test.set<-Data.set
   Test.set$peptide<-as.factor(Test.set$peptide)
+  
   Results<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
   Results_annotated<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
-
+  
   for(i in 1:nlevels(Test.set$peptide)){
-  Test.set.scale<-robust.scale(Test.set[Test.set$peptide==levels(Test.set$peptide)[i],3:6])
+  sample_data_k <- guide.set[guide.set$peptide==levels(guide.set$peptide)[i],3:6]
+
+  Test.set.scale<-Test.set[Test.set$peptide==levels(Test.set$peptide)[i],3:6]
+  
+  for(j in 1:ncol(Test.set.scale)){
+    Test.set.scale[,j]=(Test.set.scale[,j]-median(sample_data_k[,j]))/mad(sample_data_k[,j])
+  }
+  
+  sample_data_k<-robust.scale(sample_data_k)
+  
+  lambda.fm1 <- boxCox(sample_data_k$RT ~ 1, family ="yjPower", plotit = FALSE)
+  lambda.max <- lambda.fm1$x[which.max(lambda.fm1$y)]
+  Test.set.scale$RT = yjPower(Test.set.scale$RT, lambda=lambda.max, jacobian.adjusted=FALSE)
+  
+  lambda.fm1 <- boxCox(sample_data_k$TotalArea ~ 1, family ="yjPower", plotit = FALSE)
+  lambda.max <- lambda.fm1$x[which.max(lambda.fm1$y)]
+  Test.set.scale$TotalArea = yjPower(Test.set.scale$TotalArea, lambda=lambda.max, jacobian.adjusted=FALSE)
+  
+  lambda.fm1 <- boxCox(sample_data_k$MassAccu~ 1, family ="yjPower", plotit = FALSE)
+  lambda.max <- lambda.fm1$x[which.max(lambda.fm1$y)]
+  Test.set.scale$MassAccu = yjPower(Test.set.scale$MassAccu, lambda=lambda.max, jacobian.adjusted=FALSE)
+  
+  lambda.fm1 <- boxCox(sample_data_k$FWHM ~ 1, family ="yjPower", plotit = FALSE)
+  lambda.max <- lambda.fm1$x[which.max(lambda.fm1$y)]
+  Test.set.scale$FWHM = yjPower(Test.set.scale$FWHM, lambda=lambda.max, jacobian.adjusted=FALSE)
+  
   names(Test.set.scale) <- c("RT", "TotalArea", "MassAccu", "FWHM")
+  
   Test.set.scale <- add_features(Test.set.scale)
   Test.set.scale.h2o <- as.h2o(Test.set.scale)
   Predict<-as.data.frame(h2o.predict(rf_model, Test.set.scale.h2o, type="prob"))

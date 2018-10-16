@@ -1,5 +1,5 @@
 setwd("C:/Users/aidata-1508/Documents/GitHub/ML-based-QC/Factorial Runs")
-setwd("/Users/ed/GitHub/ML-based-QC/Factorial Runs")
+setwd("/Users/ed/GitHub/ML-based-QC/Factorial Runs v2")
 
 
 results_NN<-read.csv("Factorial_Results_NN.txt")
