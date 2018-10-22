@@ -9,6 +9,7 @@ sample_density <- function(guide.set, n){
                                          bctrans(guide.set.scale$TotalArea),
                                          bctrans(guide.set.scale$MassAccu),
                                          bctrans(guide.set.scale$FWHM))
+  
   #dat.dens = density(guide.set[guide.set$peptide == peptide,3], n=2^10)
   dat.dens = density(guide.set.scale[,3], n=2^10)
   sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)

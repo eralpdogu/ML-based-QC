@@ -2,11 +2,16 @@ library(readxl)
 library(h2o)
 library(caret)
 library(MASS)
+library(car) #boxCox
+library(ggplot2)
+library(gridExtra)
+library(reshape) #melt
+library(ggExtra) #rotateTextX() 
 
 factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
 
 
-source("add_features.R")
+source("auto_add_features.R")
 source("ml_algo.R")
 
 sim.size = 100
@@ -27,6 +32,7 @@ for(i in 2:nrow(factorial)){
                              sample_data_k,
                              RESPONSE= c("PASS"))
       sample_data[[k]] <- sample_data_k
+      sample_data[[k]] <- add_features(sample_data[[k]])
     }
     
   }
@@ -40,6 +46,7 @@ for(i in 2:nrow(factorial)){
                              sample_data_k,
                              RESPONSE= c("PASS"))
       sample_data[[k]] <- sample_data_k
+      sample_data[[k]] <- add_features(sample_data[[k]])
     }
     
     
@@ -54,8 +61,9 @@ for(i in 2:nrow(factorial)){
               runif(1,-2,2)*IQR(sample_data[[k]][[paste(sample_data[[k]]$peptide[1],"RT",sep = ".")]])
             tag_neg <- 1 
           }
-          
         }
+        sample_data[[k]][,"RESPONSE"] = rep("FAIL",sim.size)  
+        sample_data[[k]] <- add_features(sample_data[[k]])
       }
       
       #change in Total Area Drift for some peptides
@@ -70,6 +78,8 @@ for(i in 2:nrow(factorial)){
           }
           
         }
+        sample_data[[k]][,"RESPONSE"] = rep("FAIL",sim.size)  
+        sample_data[[k]] <- add_features(sample_data[[k]])
       }
       
       #change in Mass Accu Drift for some peptides
@@ -84,6 +94,8 @@ for(i in 2:nrow(factorial)){
           }
           
         }
+        sample_data[[k]][,"RESPONSE"] = rep("FAIL",sim.size)  
+        sample_data[[k]] <- add_features(sample_data[[k]])
       }
       
       #change in FWHM Drift for some peptides
@@ -96,13 +108,14 @@ for(i in 2:nrow(factorial)){
               runif(1,-2,2)*IQR(sample_data[[k]][[paste(sample_data[[k]]$peptide[1],"FWHM",sep = ".")]])
             tag_neg <- 1 
           }
-          
         }
+        sample_data[[k]][,"RESPONSE"] = rep("FAIL",sim.size)  
+        sample_data[[k]] <- add_features(sample_data[[k]])
       }
     }# column ends 
   }
     
-  data.set <- do.call("cbind",add_features(guide.set.scale,  sample_data))
+  data.set <- do.call("cbind",sample_data)
   data.set <- data.set[, !duplicated(colnames(data.set))]
   data.set[,"peptide"] <- NULL 
   if(tag_neg == 1){
@@ -117,10 +130,10 @@ data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
     
     
     
-dl_model <- ml_algo(data)
+rf_model <- ml_algo(data)
     
-summary(dl_model)    
+summary(rf_model)    
     
-cf<- data.frame(h2o.confusionMatrix(dl_model,valid = T),stringsAsFactors = F)
+cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
   
-
+cf

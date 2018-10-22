@@ -12,29 +12,23 @@ source("auto_add_features.R")
 source("sample_density_function.R")
 
 guide.set$peptide <-as.factor(guide.set$peptide)
-robust.scale<-function(sample_data_k){
-  for(i in 1:ncol(sample_data_k)){
-    sample_data_k[,i]=(sample_data_k[,i]-median(sample_data_k[,i]))/mad(sample_data_k[,i])
-  }
-  return(sample_data_k)
-  }
 
-sim.size = 25
+sim.size = 200
 tag_neg <- 0
+
 data <- data.frame(NULL)
 for(i in 2:nrow(factorial)){
-  #k = 4 # LVN 
   data.set <- data.frame(NULL)
   if(i == 2){
-    # ###### In cntrol observation ~ 5* sim size  the of the actual 
+    ####### In cntrol observation ~ 5* sim size  the of the actual 
     sample_data_k <- sample_density(guide.set, sim.size*15)
-    sample_data_k <- robust.scale(sample_data_k)
+    #sample_data_k <- robust.scale(sample_data_k)
   }
   
   else{
     ###### Base Data set to begin with 
     sample_data_k <- sample_density(guide.set.scale, sim.size)
-    sample_data_k <- robust.scale(sample_data_k)
+    #sample_data_k <- robust.scale(sample_data_k)
 
     for(j in 2:5){
       #change in RT Drift for some peptides
@@ -54,13 +48,13 @@ for(i in 2:nrow(factorial)){
       #change in Mass Accu Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Mass Accu drift"){ 
         beta=runif(sim.size,-3,3)
-        sample_data_k$MassAccu <- sample_data_k$MassAccu +beta*mad(sample_data_k$MassAccu)
+        sample_data_k$MassAccu <- sample_data_k$MassAccu + beta*mad(sample_data_k$MassAccu)
         tag_neg <- 1 
       }
       #change in FWHM Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="FWHM drift"){
         beta=runif(sim.size,-3,3)
-        sample_data_k$FWHM <- sample_data_k$FWHM +beta*mad(sample_data_k$FWHM)
+        sample_data_k$FWHM <- sample_data_k$FWHM + beta*mad(sample_data_k$FWHM)
         tag_neg <- 1 
       }
       
