@@ -12,8 +12,8 @@
   source("auto_add_features.R")
   source("robust_scale.R")
   
-  beta=-3
-  sim.size=100
+  beta=-2
+  sim.size=50
   
   sample_density_sim <- function(guide.set, peptide, n){
     sample_data<-c()
@@ -64,12 +64,12 @@
   }
   as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
   
-  for(j in 6:8){
+  for(j in 1:8){
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
       Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
-                         sample_data[i,1]+beta*mad(sample_data[,1]),
+                         sample_data[i,1]+ beta*mad(sample_data[,1]),
                          sample_data[i,2],
                          sample_data[i,3],
                          sample_data[i,4]))

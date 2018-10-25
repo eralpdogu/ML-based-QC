@@ -19,6 +19,8 @@
 
 # QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
   
+  source("auto_add_features.R")
+
   Test.set<-Data.set
   Test.set$peptide<-as.factor(Test.set$peptide)
   
@@ -27,18 +29,17 @@
   
   for(i in 1:nlevels(Test.set$peptide)){
 
-  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],3:6]
+  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],c(3:(ncol(Test.set)-1))]
   
   Test.set.scale <- robust.scale(Test.set.scale)
   
-  Test.set.scale <- data.frame(bctrans(Test.set.scale$RT),
-                              bctrans(Test.set.scale$TotalArea),
-                              bctrans(Test.set.scale$MassAccu),
-                              bctrans(Test.set.scale$FWHM))
+  for(k in 1:ncol(Test.set.scale)){Test.set.scale[,k] <- bctrans(Test.set.scale[,k])}
   
   names(Test.set.scale) <- c("RT", "TotalArea", "MassAccu", "FWHM")
 
   Test.set.scale <- add_features(Test.set.scale)
+  
+  Test.set.scale <- Test.set.scale[,order(names(Test.set.scale))]
   
   Test.set.scale.h2o <- as.h2o(Test.set.scale)
   Predict<-as.data.frame(h2o.predict(rf_model, Test.set.scale.h2o, type="prob"))
@@ -76,8 +77,7 @@
     removeGrid()+
     scale_fill_gradient(low = "blue", high = "red",name = "Probability") 
   
-  g2
-  #grid.arrange(g1,g2)
+  grid.arrange(g1,g2)
 
 #}
 

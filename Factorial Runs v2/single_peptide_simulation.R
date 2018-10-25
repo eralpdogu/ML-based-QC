@@ -6,14 +6,14 @@ library(ggExtra)
 library(ggplot2)
 library(gridExtra)
 
-factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
-
 source("auto_add_features.R")
 source("sample_density_function.R")
 
+factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
+
 guide.set$peptide <-as.factor(guide.set$peptide)
 
-sim.size = 200
+sim.size = 2000
 tag_neg <- 0
 
 data <- data.frame(NULL)
@@ -23,13 +23,14 @@ for(i in 2:nrow(factorial)){
     ####### In cntrol observation ~ 5* sim size  the of the actual 
     sample_data_k <- sample_density(guide.set, sim.size*15)
     #sample_data_k <- robust.scale(sample_data_k)
+    
   }
   
   else{
     ###### Base Data set to begin with 
     sample_data_k <- sample_density(guide.set.scale, sim.size)
     #sample_data_k <- robust.scale(sample_data_k)
-
+    
     for(j in 2:5){
       #change in RT Drift for some peptides
       if(factorial[i,j]== "+" & colnames(factorial[i,j])=="RT drift"){ 
@@ -98,7 +99,7 @@ test_h2o <- as.h2o(test)
 rf_model <- h2o.randomForest(         ## h2o.randomForest function
   training_frame = train_h2o,        ## the H2O frame for training
   validation_frame = test_h2o,      ## the H2O frame for validation (not required)
-  x= colnames(train_h2o[,c(1:4,5:21)]),
+  x= colnames(train_h2o[,c(1:4,5:17)]),
   y= "RESPONSE",
   model_id = "rf_model",    ## name the model in H2O
   ntrees = 200,                  ##   not required, but helps use Flow
@@ -112,6 +113,8 @@ rf_model <- h2o.randomForest(         ## h2o.randomForest function
   seed = 123) 
 
 summary(rf_model)    
+
+boxplot(train,horizontal = T, las=1, cex.axis = 0.5)
 
 cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
 cf
