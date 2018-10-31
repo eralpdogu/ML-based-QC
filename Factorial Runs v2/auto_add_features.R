@@ -1,5 +1,5 @@
 add_features<-function(temp.Data){
-    for(i in 1:4){
+    for(i in 1:ncol(temp.Data)){
       v <- numeric(length(temp.Data[,i]))
       MR <- numeric(length(temp.Data[,i]))
       CUSUMpoz.m <- numeric(length(temp.Data[,i]))
@@ -16,7 +16,7 @@ add_features<-function(temp.Data){
         v[k] <- (sqrt(abs(temp.Data[k,i]))-0.822)/0.349
         CUSUMpoz.m[k] <- max(0,(temp.Data[k,i]-d+CUSUMpoz.m[k-1]))
         CUSUMneg.m[k] <- max(0,(-d-temp.Data[k,i]+CUSUMneg.m[k-1]))
-        CUSUMpoz.v[k] <- max(0,(v[k]-d+CUSUMpoz.v[k-1]))
+        CUSUMpoz.v[k] <- max(0,(scale(v[k])-d+CUSUMpoz.v[k-1]))
       }
       #addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m, CUSUMpoz.v)
       addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m)

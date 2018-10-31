@@ -5,7 +5,7 @@
 #' @param peptide the name of peptide of interest.
 #' @param method the method used to model. Two values can be assigned, "randomforest" or "neuralnetwork".
 #' @export
-#' @import caret pdp ggplot2 MASS dplyr
+#' @import caret ggplot2 MASS dplyr
 #' @import h2o
 #' @examples
 #' # First process the data to make sure it's ready to use
@@ -38,7 +38,7 @@ QcClassifierTrain <- function(guide.set, sim.size=1000){
     
     else{
       ###### Base Data set to begin with 
-      sample_data_k <- sample_density(guide.set.scale, sim.size)
+      sample_data_k <- sample_density(guide.set, sim.size)
 
       for(j in 2:5){
         #change in RT Drift for some peptides
@@ -122,8 +122,6 @@ QcClassifierTrain <- function(guide.set, sim.size=1000){
     seed = 123) 
   
   summary(rf_model)    
-  
-  boxplot(train,horizontal = T, las=1, cex.axis = 0.5)
   
   cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
   cf

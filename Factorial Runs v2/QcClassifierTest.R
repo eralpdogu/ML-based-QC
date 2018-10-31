@@ -15,9 +15,9 @@
 #' # Find the name of the peptides
 #' levels(sampleData$Precursor)
 #' # Calculate change point statistics
-#' QcClassifierTrainr(guide.set = sampleData[1:20,], peptide = "LVNELTEFAK", method = "randomforest")
+#' QcClassifierTrain(guide.set = sampleData[1:20,], peptide = "LVNELTEFAK", method = "randomforest")
 
-# QcClassifierTest<- function(guide.set, Test.set, peptide, method, nmetrics){
+  QcClassifierTest<- function(Test.set){
   
   source("auto_add_features.R")
 
@@ -79,6 +79,6 @@
   
   grid.arrange(g1,g2)
 
-#}
+}
 
 

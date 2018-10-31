@@ -64,7 +64,7 @@
   }
   as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
   
-  for(j in 1:8){
+  for(j in 6:8){
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
