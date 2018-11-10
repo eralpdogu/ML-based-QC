@@ -21,7 +21,6 @@
   
   source("auto_add_features.R")
 
-  Test.set<-Data.set
   Test.set$peptide<-as.factor(Test.set$peptide)
   
   Results<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))

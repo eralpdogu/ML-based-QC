@@ -10,24 +10,24 @@
   #generate in-control observations
   source("sample_density_function.R")
   source("auto_add_features.R")
-  source("robust_scale.R")
+  source("robust_scaling.R")
   
-  beta=-2
+  beta=-1.5
   sim.size=50
   
   sample_density_sim <- function(guide.set, peptide, n){
     sample_data<-c()
     
-    dat.dens = density(guide.set[guide.set$peptide == peptide,3], n=2^10)
+    dat.dens = stats::density(guide.set[guide.set$peptide == peptide,3], n=2^10)
     sim.sample.RT = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
     
-    dat.dens = density(guide.set[guide.set$peptide == peptide,4], n=2^10)
+    dat.dens = stats::density(guide.set[guide.set$peptide == peptide,4], n=2^10)
     sim.sample.TotalArea = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
     
-    dat.dens = density(guide.set[guide.set$peptide == peptide,5], n=2^10)
+    dat.dens = stats::density(guide.set[guide.set$peptide == peptide,5], n=2^10)
     sim.sample.MassAccu = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
     
-    dat.dens = density(guide.set[guide.set$peptide == peptide,6], n=2^10)
+    dat.dens = stats::density(guide.set[guide.set$peptide == peptide,6], n=2^10)
     sim.sample.FWHM = sample(dat.dens$x, n, replace=TRUE, prob=dat.dens$y)
     
     sample_data <- data.frame(sim.sample.RT,sim.sample.TotalArea,sim.sample.MassAccu, sim.sample.FWHM)
@@ -38,7 +38,7 @@
   
   for(j in 1:nlevels(guide.set$peptide)){ 
     Data<-c()
-    sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
+    sample_data <- sample_density_sim(guide.set, guide.set$peptide[j], sim.size)
     
     Data<-data.frame(idfile=1:(sim.size),
                      peptide=rep(levels(guide.set$peptide)[j], (sim.size)),
@@ -83,7 +83,7 @@
   }
   
   #Merge all types of disturbances + in-control observations
-  for(j in 1:nlevels(guide.set.scale$peptide)){
+  for(j in 1:nlevels(guide.set$peptide)){
     Data.set[[j]]<-rbind(Data0[[j]], Data1[[j]])
   }
   Data.set<-rbind(Data.set[[1]], 
@@ -94,4 +94,6 @@
                   Data.set[[6]],
                   Data.set[[7]],
                   Data.set[[8]])
+ 
+  QcClassifierTest(Test.set) 
   
