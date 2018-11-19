@@ -18,7 +18,7 @@ sample_density <- function(guide.set, n){
     sample_data[,j] <- dens(guide.set.scale[,j], n)
   }
   
-  names(sample_data) <- colnames(guide.set[,c(3:(ncol(Test.set)-1))])
+  names(sample_data) <- colnames(guide.set[,c(3:(ncol(guide.set)))])
   
   return(sample_data)
 }

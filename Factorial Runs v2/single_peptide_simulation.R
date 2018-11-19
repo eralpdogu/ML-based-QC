@@ -20,13 +20,12 @@ sim.size = 2000
 tag_neg <- 0
 
 data <- data.frame(NULL)
-for(i in 2:nrow(factorial)){
+
+for(i in 1:nrow(factorial)){
   data.set <- data.frame(NULL)
-  if(i == 2){
+  if(i == 5){
     ####### In cntrol observation ~ 5* sim size  the of the actual 
     sample_data_k <- sample_density(guide.set, sim.size*15)
-    #sample_data_k <- robust.scale(sample_data_k)
-    
   }
   
   else{
@@ -34,35 +33,17 @@ for(i in 2:nrow(factorial)){
     sample_data_k <- sample_density(guide.set, sim.size)
     #sample_data_k <- robust.scale(sample_data_k)
     
-    for(j in 2:5){
-      #change in RT Drift for some peptides
-      if(factorial[i,j]== "+" & colnames(factorial[i,j])=="RT drift"){ 
+    for(j in 1:4){
+      for(k in 1:ncol(sample_data_k)){
+      #change in a metric for some peptides
+      if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[k]){ 
         beta=runif(sim.size,-3,3)
-        sample_data_k$RT <- sample_data_k$RT + beta*mad(sample_data_k$RT)
-        tag_neg <- 1 
-      }
-      
-      #change in Total Area Drift for some peptides
-      if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Total Area drift"){ 
-        beta=runif(sim.size,-3,3)
-        sample_data_k$TotalArea <- sample_data_k$TotalArea + beta*mad(sample_data_k$TotalArea)
-        tag_neg <- 1 
-      }
-       
-      #change in Mass Accu Drift for some peptides
-      if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Mass Accu drift"){ 
-        beta=runif(sim.size,-3,3)
-        sample_data_k$MassAccu <- sample_data_k$MassAccu + beta*mad(sample_data_k$MassAccu)
-        tag_neg <- 1 
-      }
-      #change in FWHM Drift for some peptides
-      if(factorial[i,j]== "+" & colnames(factorial[i,j])=="FWHM drift"){
-        beta=runif(sim.size,-3,3)
-        sample_data_k$FWHM <- sample_data_k$FWHM + beta*mad(sample_data_k$FWHM)
+        sample_data_k[,k] <- sample_data_k[,k] + beta*mad(sample_data_k[,k])
         tag_neg <- 1 
       }
       
     }# column ends 
+    }
   }
   data.set <- rbind(add_features(sample_data_k))
   #data.set[,"peptide"] <- NULL 
