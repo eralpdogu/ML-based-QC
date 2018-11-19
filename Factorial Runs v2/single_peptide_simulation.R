@@ -5,11 +5,14 @@ library(MASS)
 library(ggExtra)
 library(ggplot2)
 library(gridExtra)
+library(stats)
+library(FrF2) 
 
 source("auto_add_features.R")
 source("sample_density_function.R")
+nmetric<-4
 
-factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
+factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
 
 guide.set$peptide <-as.factor(guide.set$peptide)
 
@@ -28,7 +31,7 @@ for(i in 2:nrow(factorial)){
   
   else{
     ###### Base Data set to begin with 
-    sample_data_k <- sample_density(guide.set.scale, sim.size)
+    sample_data_k <- sample_density(guide.set, sim.size)
     #sample_data_k <- robust.scale(sample_data_k)
     
     for(j in 2:5){
@@ -99,7 +102,7 @@ test_h2o <- as.h2o(test)
 rf_model <- h2o.randomForest(         ## h2o.randomForest function
   training_frame = train_h2o,        ## the H2O frame for training
   validation_frame = test_h2o,      ## the H2O frame for validation (not required)
-  x= colnames(train_h2o[,c(1:4,5:17)]),
+  x= colnames(train_h2o),
   y= "RESPONSE",
   model_id = "rf_model",    ## name the model in H2O
   ntrees = 200,                  ##   not required, but helps use Flow
