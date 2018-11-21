@@ -37,7 +37,7 @@ for(i in 1:nrow(factorial)){
       for(k in 1:ncol(sample_data_k)){
       #change in a metric for some peptides
       if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[k]){ 
-        beta=runif(sim.size,-3,3)
+        beta=runif(sim.size,-5,5)
         sample_data_k[,k] <- sample_data_k[,k] + beta*mad(sample_data_k[,k])
         tag_neg <- 1 
       }

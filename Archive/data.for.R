@@ -27,12 +27,16 @@ setwd("/Users/ed/Dropbox/3. MSstatsQC paper 3/4. DATA")
 test.set <-read.csv('lumos_all_set.csv')
 ind <- which(with( test.set, (test.set$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carbamidomethyl)AK" | test.set$PepSeq=="TC(Carbamidomethyl)VADESHAGC(Carbamidomethyl)EK") ))
 test.set<-test.set[-ind,]
-test.set<-test.set[,-c(5,6)]
-test.set<-test.set[,-2]
 test.set$PepSeq<- gsub("\\(Carbamidomethyl\\)","",test.set$PepSeq)
-test.set[test.set$rt.sec.==0,]<-NA
-test.set<-test.set[complete.cases(test.set),]
+test.set<-test.set[,-c(2)]
 colnames(test.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'MassAccu','FWHM')
+test.set[test.set$RT=='NULL',]<-NA
+test.set<-test.set[complete.cases(test.set),]
+test.set$RT<-as.numeric(as.character(test.set$RT))
+test.set$TotalArea<-as.numeric(as.character(test.set$TotalArea))
+test.set$MassAccu<-as.numeric(as.character(test.set$MassAccu))
+test.set$FWHM<-as.numeric(as.character(test.set$FWHM))
+
 Test.set<-test.set
 
 setwd("/Users/ed/GitHub/ML-based-QC/Factorial Runs v2")

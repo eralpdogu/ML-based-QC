@@ -23,12 +23,12 @@
 
   Test.set$peptide<-as.factor(Test.set$peptide)
   
-  Results<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
-  Results_annotated<-as.data.frame(matrix(0,dim(Test.set)[1]/nlevels(Test.set$peptide),nlevels(Test.set$peptide)))
+  Results<-as.data.frame(matrix(0,max(table(Test.set$peptide)),nlevels(Test.set$peptide)))
+  Results_annotated<-as.data.frame(matrix(0,max(table(Test.set$peptide)),nlevels(Test.set$peptide)))
   
   for(i in 1:nlevels(Test.set$peptide)){
 
-  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],c(3:(ncol(Test.set)-1))]
+  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],c(3:ncol(Test.set))]
   
   Test.set.scale <- robust.scale(Test.set.scale)
   
