@@ -1,31 +1,31 @@
-library(readxl)
+
 library(h2o)
-library(caret)
 library(MASS)
 library(ggExtra)
 library(ggplot2)
 library(gridExtra)
 library(stats)
 library(FrF2) 
+library(car)
 
 source("auto_add_features.R")
 source("sample_density_function.R")
-nmetric<-4
+nmetric<-ncol(guide.set)-2
 
 factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
 
 guide.set$peptide <-as.factor(guide.set$peptide)
 
-sim.size = 2000
+sim.size = 100
 tag_neg <- 0
 
 data <- data.frame(NULL)
 
 for(i in 1:nrow(factorial)){
   data.set <- data.frame(NULL)
-  if(i == 5){
+  if(factorial[i,]== rep(-1,nmetric)){
     ####### In cntrol observation ~ 5* sim size  the of the actual 
-    sample_data_k <- sample_density(guide.set, sim.size*15)
+    sample_data_k <- sample_density(guide.set, sim.size)
   }
   
   else{
@@ -33,15 +33,13 @@ for(i in 1:nrow(factorial)){
     sample_data_k <- sample_density(guide.set, sim.size)
     #sample_data_k <- robust.scale(sample_data_k)
     
-    for(j in 1:4){
-      for(k in 1:ncol(sample_data_k)){
+    for(j in 1:ncol(sample_data_k)){
       #change in a metric for some peptides
-      if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[k]){ 
+      if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
         beta=runif(sim.size,-5,5)
-        sample_data_k[,k] <- sample_data_k[,k] + beta*mad(sample_data_k[,k])
+        sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
         tag_neg <- 1 
-      }
-      
+    
     }# column ends 
     }
   }
