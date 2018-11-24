@@ -8,57 +8,89 @@ library(stats)
 library(FrF2) 
 library(car)
 
+guide.set1 <- guide.set
+guide.set2 <- guide.set[,1:5]
+
 source("auto_add_features.R")
 source("sample_density_function.R")
-nmetric<-ncol(guide.set)-2
+source("boxcox_transformation.R")
+source("robust_scaling.R")
 
-factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
-
-guide.set$peptide <-as.factor(guide.set$peptide)
-
+#function inputs
+new_data <- guide.set2
+nmetric<-ncol(new_data)-2
+factor.names = colnames(new_data[,3:ncol(new_data)])
 sim.size = 100
-tag_neg <- 0
+#optional 
+new_data$peptide <-as.factor(new_data$peptide)
 
-data <- data.frame(NULL)
-
-for(i in 1:nrow(factorial)){
-  data.set <- data.frame(NULL)
-  if(factorial[i,]== rep(-1,nmetric)){
-    ####### In cntrol observation ~ 5* sim size  the of the actual 
-    sample_data_k <- sample_density(guide.set, sim.size)
+QcClassifie_data <- function(data,nmetrics,factor.names,sim.size,peptide.colname){
+  
+  if(!is.factor(new_data[,paste(peptide.colname)])){
+    new_data$peptide <-as.factor(new_data$peptide.colname)  
+  }
+  #factorial matrix  
+  factorial <- FrF2(2^nmetric, nmetric,factor.names=factor.names)
+  
+  
+  tag_neg <- 0
+  data <- data.frame(NULL)
+  
+  for(i in 1:nrow(factorial)){
+    data.set <- data.frame(NULL)
+    if(all(factorial[i,]== rep(-1,nmetric))){
+      ####### In cntrol observation ~ 5* sim size  the of the actual 
+      sample_data_k <- sample_density(new_data, sim.size*(2^(nmetric)-1))
+    }
+    
+    else{
+      ###### Base Data set to begin with 
+      sample_data_k <- sample_density(new_data, sim.size)
+      #sample_data_k <- robust.scale(sample_data_k)
+      
+      for(j in 1:ncol(sample_data_k)){
+        #change in a metric for some peptides
+        if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
+          beta=runif(sim.size,-5,5)
+          sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
+          tag_neg <- 1 
+          
+        }# column ends 
+      }
+    }
+    data.set <- rbind(data.set,add_features(sample_data_k))
+    #data.set[,"peptide"] <- NULL 
+    if(tag_neg == 1){
+      data.set$RESPONSE <- c("FAIL")
+      tag_neg <- 0
+    }
+    else{
+      data.set$RESPONSE <- c("PASS")
+    }
+    data <- data[,order(names(data))]
+    data.set <- data.set[,order(names(data.set))]
+    data <-rbind(data,data.set)
   }
   
-  else{
-    ###### Base Data set to begin with 
-    sample_data_k <- sample_density(guide.set, sim.size)
-    #sample_data_k <- robust.scale(sample_data_k)
-    
-    for(j in 1:ncol(sample_data_k)){
-      #change in a metric for some peptides
-      if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
-        beta=runif(sim.size,-5,5)
-        sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
-        tag_neg <- 1 
-    
-    }# column ends 
-    }
-  }
-  data.set <- rbind(add_features(sample_data_k))
-  #data.set[,"peptide"] <- NULL 
-  if(tag_neg == 1){
-    data.set$RESPONSE <- c("FAIL")
-    tag_neg <- 0
-  }
-  else{
-    data.set$RESPONSE <- c("PASS")
-  }
-  data <- data[,order(names(data))]
-  data.set <- data.set[,order(names(data.set))]
-  data <-rbind(data,data.set)
+  data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
+  data$RESPONSE <- as.factor(data$RESPONSE)
+  
+  return(data) 
 }
 
-data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
-data$RESPONSE <- as.factor(data$RESPONSE)
+# Test Cases : 
+new_data <- guide.set2
+nmetric<-ncol(new_data)-2
+factor.names = colnames(new_data[,3:ncol(new_data)])
+sim.size = 100
+#optional 
+peptide.colname <-"peptide"
+
+
+d <- QcClassifie_data(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
+
+
+  
 
 ## 80% of the sample size
 smp_size <- floor(0.8 * nrow(data))
