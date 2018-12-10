@@ -15,6 +15,7 @@ source("auto_add_features.R")
 source("sample_density_function.R")
 source("boxcox_transformation.R")
 source("robust_scaling.R")
+source("QcClassifier_data.R")
 
 #function inputs
 new_data <- guide.set2
@@ -24,60 +25,6 @@ sim.size = 100
 #optional 
 new_data$peptide <-as.factor(new_data$peptide)
 
-QcClassifie_data <- function(data,nmetrics,factor.names,sim.size,peptide.colname){
-  
-  if(!is.factor(new_data[,paste(peptide.colname)])){
-    new_data$peptide <-as.factor(new_data$peptide.colname)  
-  }
-  #factorial matrix  
-  factorial <- FrF2(2^nmetric, nmetric,factor.names=factor.names)
-  
-  
-  tag_neg <- 0
-  data <- data.frame(NULL)
-  
-  for(i in 1:nrow(factorial)){
-    data.set <- data.frame(NULL)
-    if(all(factorial[i,]== rep(-1,nmetric))){
-      ####### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(new_data, sim.size*(2^(nmetric)-1))
-    }
-    
-    else{
-      ###### Base Data set to begin with 
-      sample_data_k <- sample_density(new_data, sim.size)
-      #sample_data_k <- robust.scale(sample_data_k)
-      
-      for(j in 1:ncol(sample_data_k)){
-        #change in a metric for some peptides
-        if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
-          beta=runif(sim.size,-5,5)
-          sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
-          tag_neg <- 1 
-          
-        }# column ends 
-      }
-    }
-    data.set <- rbind(data.set,add_features(sample_data_k))
-    #data.set[,"peptide"] <- NULL 
-    if(tag_neg == 1){
-      data.set$RESPONSE <- c("FAIL")
-      tag_neg <- 0
-    }
-    else{
-      data.set$RESPONSE <- c("PASS")
-    }
-    data <- data[,order(names(data))]
-    data.set <- data.set[,order(names(data.set))]
-    data <-rbind(data,data.set)
-  }
-  
-  data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
-  data$RESPONSE <- as.factor(data$RESPONSE)
-  
-  return(data) 
-}
-
 # Test Cases : 
 new_data <- guide.set2
 nmetric<-ncol(new_data)-2
@@ -86,20 +33,19 @@ sim.size = 100
 #optional 
 peptide.colname <-"peptide"
 
+d1 <- QcClassifier_data_step(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
+d2 <- QcClassifier_data_var(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
+d3 <- QcClassifier_data_linear(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
 
-d <- QcClassifie_data(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
-
-
-  
-
+d<-rbind(d1,d2,d3)
 ## 80% of the sample size
-smp_size <- floor(0.8 * nrow(data))
+smp_size <- floor(0.8 * nrow(d))
 
 set.seed(123)
-train_ind <- sample(seq_len(nrow(data)), size = smp_size)
+train_ind <- sample(seq_len(nrow(d)), size = smp_size)
 
-train <- data[train_ind,]
-test <- data[-train_ind,]
+train <- d[train_ind,]
+test <- d[-train_ind,]
 
 
 #launch h2o cluster
