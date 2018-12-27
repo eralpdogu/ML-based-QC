@@ -7,10 +7,11 @@ library(gridExtra)
 library(stats)
 library(FrF2) 
 library(car)
+library(reshape2)
+library(lime)
 
-guide.set1 <- guide.set
-guide.set2 <- guide.set[,1:5]
-
+QCClassifierTrain<- function(guide.set, sim.size){
+  
 source("auto_add_features.R")
 source("sample_density_function.R")
 source("boxcox_transformation.R")
@@ -18,26 +19,23 @@ source("robust_scaling.R")
 source("QcClassifier_data.R")
 
 #function inputs
-new_data <- guide.set2
+new_data <- guide.set
 nmetric<-ncol(new_data)-2
 factor.names = colnames(new_data[,3:ncol(new_data)])
-sim.size = 100
+sim.size = sim.size
 #optional 
 new_data$peptide <-as.factor(new_data$peptide)
 
-# Test Cases : 
-new_data <- guide.set2
-nmetric<-ncol(new_data)-2
-factor.names = colnames(new_data[,3:ncol(new_data)])
-sim.size = 100
 #optional 
 peptide.colname <-"peptide"
 
-d1 <- QcClassifier_data_step(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
-d2 <- QcClassifier_data_var(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
-d3 <- QcClassifier_data_linear(new_data,nmetric,factor.names,sim.size = 100,peptide.colname)
+d1 <- QcClassifier_data_step(new_data,nmetric,factor.names,sim.size,peptide.colname)
 
-d<-rbind(d1,d2,d3)
+#d2 <- QcClassifier_data_var(new_data,nmetric,factor.names,sim.size,peptide.colname)
+#d3 <- QcClassifier_data_linear(new_data,nmetric,factor.names,sim.size,peptide.colname)
+
+d<-d1
+#d<-rbind(d1,d2,d3)
 ## 80% of the sample size
 smp_size <- floor(0.8 * nrow(d))
 
@@ -79,3 +77,8 @@ boxplot(train,horizontal = T, las=1, cex.axis = 0.5)
 cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
 cf
 
+}
+
+QCClassifierTrain(guide.set, 500)
+QCClassifierTest(Test.set)
+QCClassifierInterpret(train, Test.set.scale, rf_model, 48)

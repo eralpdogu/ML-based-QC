@@ -17,10 +17,11 @@
 #' # Calculate change point statistics
 #' QcClassifierTrain(guide.set = sampleData[1:20,], peptide = "LVNELTEFAK", method = "randomforest")
 
-  QcClassifierTest<- function(Test.set){
+  QCClassifierTest<- function(Test.set){
   
   source("auto_add_features.R")
-
+  source("robust_scaling.R")
+  
   Test.set$peptide<-as.factor(Test.set$peptide)
   
   Results<-as.data.frame(matrix(0,max(table(Test.set$peptide)),nlevels(Test.set$peptide)))
@@ -28,9 +29,15 @@
   
   for(i in 1:nlevels(Test.set$peptide)){
 
-  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],c(3:ncol(Test.set))]
+  Test.set.scale <- Test.set[Test.set$peptide==levels(Test.set$peptide)[i],c(3:(ncol(Test.set)-1))]
   
-  Test.set.scale <- robust.scale(Test.set.scale)
+  guide.set.new<-guide.set[guide.set$peptide==levels(guide.set$peptide)[i],c(3:(ncol(guide.set)))]
+  
+  for(k in 1:ncol(Test.set.scale)){
+  Test.set.scale[,k]=(Test.set.scale[,k]-median(guide.set.new[,k]))/mad(guide.set.new[,k])
+  }
+  
+  #Test.set.scale <- robust.scale(Test.set.scale)
   
   for(k in 1:ncol(Test.set.scale)){Test.set.scale[,k] <- bctrans(Test.set.scale[,k])}
   
@@ -48,10 +55,6 @@
   colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
   
   }
-  
-  #explainer <- lime(train, rf_model)
-  #explanation <- explain(Test.set.scale, explainer, n_labels = 1, n_features = 2)
-  #plot_features(explanation[48:50,])
   
   boxplot(Test.set.scale,horizontal = T, las=1, cex.axis = 0.5)
   

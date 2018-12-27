@@ -28,7 +28,7 @@ QcClassifier_data_step <- function(data,nmetrics,factor.names,sim.size,peptide.c
       for(j in 1:ncol(sample_data_k)){
         #change in a metric for some peptides
         if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
-          beta=runif(sim.size,-5,5)
+          beta=runif(sim.size,-3,3)
           sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
           tag_neg <- 1 
           
@@ -84,10 +84,9 @@ QcClassifier_data_var <- function(data,nmetrics,factor.names,sim.size,peptide.co
       for(j in 1:ncol(sample_data_k)){
         #change in a metric for some peptides
         if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
-          beta=runif(sim.size,-5,5)
-          sample_data_k[,j] <- sample_data_k[,j]*beta
+          beta=runif(sim.size,-3,3)
+          sample_data_k[,j]<-ifelse(sample_data_k[,j] > median(sample_data_k[,j]), sample_data_k[,j]+beta, sample_data_k[,j]-beta)
           tag_neg <- 1 
-          
         }# column ends 
       }
     }
@@ -141,10 +140,9 @@ QcClassifier_data_linear <- function(data,nmetrics,factor.names,sim.size,peptide
       for(j in 1:ncol(sample_data_k)){
         #change in a metric for some peptides
         if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
-          beta=runif(sim.size,0,2)
-          for(i in 1:sim.size){
-          beta[i]=beta[i]*(i-sim.size)}
-          sample_data_k[,j] <- sample_data_k[,j] + beta*mad(sample_data_k[,j])
+          beta=runif(sim.size,-3,3)
+          for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
+          sample_data_k[,j] <- sample_data_k[,j] + beta
           tag_neg <- 1 
           
         }# column ends 
