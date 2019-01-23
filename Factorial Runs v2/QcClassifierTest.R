@@ -23,9 +23,8 @@
   source("robust_scaling.R")
   
   Test.set$peptide<-as.factor(Test.set$peptide)
-  
-  Results<-as.data.frame(matrix(0,max(table(Test.set$peptide)),nlevels(Test.set$peptide)))
-  Results_annotated<-as.data.frame(matrix(0,max(table(Test.set$peptide)),nlevels(Test.set$peptide)))
+  Results<-list()
+  Results_annotated<-list()
   
   for(i in 1:nlevels(Test.set$peptide)){
 
@@ -41,7 +40,7 @@
   
   for(k in 1:ncol(Test.set.scale)){Test.set.scale[,k] <- bctrans(Test.set.scale[,k])}
   
-  names(Test.set.scale) <- c("RT", "TotalArea", "MassAccu", "FWHM")
+  names(Test.set.scale) <- colnames(Test.set[,3:(ncol(Test.set)-1)])
 
   Test.set.scale <- add_features(Test.set.scale)
   
@@ -49,17 +48,21 @@
   
   Test.set.scale.h2o <- as.h2o(Test.set.scale)
   Predict<-as.data.frame(h2o.predict(rf_model, Test.set.scale.h2o, type="prob"))
-  Results[,i]<-Predict$FAIL
-  Results_annotated[,i]<-Predict$predict
-  colnames(Results)[i]<-levels(Test.set$peptide)[i]
-  colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
+  Results[[i]]<-Predict$FAIL
+  Results_annotated[[i]]<-Predict$predict
+  #colnames(Results)[i]<-levels(Test.set$peptide)[i]
+  #colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
   
   }
   
+  Results<-t(plyr::ldply(Results, rbind))
+  Results_annotated<-t(plyr::ldply(Results_annotated, rbind))
+  colnames(Results)<-levels(Test.set$peptide)
+  colnames(Results_annotated)<-levels(Test.set$peptide)
   boxplot(Test.set.scale,horizontal = T, las=1, cex.axis = 0.5)
-  
-  Results<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results)
-  Results_annotated<-data.frame(RUN=1:(dim(Test.set)[1]/nlevels(Test.set$peptide)), Results_annotated)
+  dim(Results)
+  Results<-data.frame(RUN=1:(dim(Results)[1]), Results)
+  Results_annotated<-data.frame(RUN=1:(dim(Results)[1]), Results_annotated)
   
   Results_melt <- melt(Results_annotated,id.vars ="RUN")
   colors <- c("red","blue")
@@ -79,7 +82,7 @@
     removeGrid()+
     scale_fill_gradient(low = "blue", high = "red",name = "Probability") 
   
-  grid.arrange(g1,g2)
+  grid.arrange(g2)
 
 }
 

@@ -1,13 +1,13 @@
 
 # Step shift --------------------------------------------------------------
 
-QcClassifier_data_step <- function(data,nmetrics,factor.names,sim.size,peptide.colname){
+QcClassifier_data_step <- function(guide.set,nmetric,factor.names,sim.size,peptide.colname){
   
-  if(!is.factor(new_data[,paste(peptide.colname)])){
-    new_data$peptide <-as.factor(new_data$peptide.colname)  
+  if(!is.factor(guide.set[,paste(peptide.colname)])){
+    guide.set$peptide <-as.factor(new_data$peptide.colname)  
   }
   #factorial matrix  
-  factorial <- FrF2(2^nmetric, nmetric,factor.names=factor.names)
+  factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
   
   
   tag_neg <- 0
@@ -17,12 +17,12 @@ QcClassifier_data_step <- function(data,nmetrics,factor.names,sim.size,peptide.c
     data.set <- data.frame(NULL)
     if(all(factorial[i,]== rep(-1,nmetric))){
       ####### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(new_data, sim.size*(2^(nmetric)-1))
+      sample_data_k <- sample_density(guide.set, sim.size*(2^(nmetric)-1))
     }
     
     else{
       ###### Base Data set to begin with 
-      sample_data_k <- sample_density(new_data, sim.size)
+      sample_data_k <- sample_density(guide.set, sim.size)
       #sample_data_k <- robust.scale(sample_data_k)
       
       for(j in 1:ncol(sample_data_k)){
@@ -57,13 +57,13 @@ QcClassifier_data_step <- function(data,nmetrics,factor.names,sim.size,peptide.c
 
 # Variance change ---------------------------------------------------------
 
-QcClassifier_data_var <- function(data,nmetrics,factor.names,sim.size,peptide.colname){
+QcClassifier_data_var <- function(data,nmetric,factor.names,sim.size,peptide.colname){
   
-  if(!is.factor(new_data[,paste(peptide.colname)])){
-    new_data$peptide <-as.factor(new_data$peptide.colname)  
+  if(!is.factor(guide.set[,paste(peptide.colname)])){
+    guide.set$peptide <-as.factor(guide.set$peptide.colname)  
   }
   #factorial matrix  
-  factorial <- FrF2(2^nmetric, nmetric,factor.names=factor.names)
+  factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
   
   
   tag_neg <- 0
@@ -73,12 +73,12 @@ QcClassifier_data_var <- function(data,nmetrics,factor.names,sim.size,peptide.co
     data.set <- data.frame(NULL)
     if(all(factorial[i,]== rep(-1,nmetric))){
       ####### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(new_data, sim.size*(2^(nmetric)-1))
+      sample_data_k <- sample_density(guide.set, sim.size*(2^(nmetric)-1))
     }
     
     else{
       ###### Base Data set to begin with 
-      sample_data_k <- sample_density(new_data, sim.size)
+      sample_data_k <- sample_density(guide.set, sim.size)
       #sample_data_k <- robust.scale(sample_data_k)
       
       for(j in 1:ncol(sample_data_k)){
@@ -113,13 +113,13 @@ QcClassifier_data_var <- function(data,nmetrics,factor.names,sim.size,peptide.co
 
 # Linear drift ------------------------------------------------------------
 
-QcClassifier_data_linear <- function(data,nmetrics,factor.names,sim.size,peptide.colname){
+QcClassifier_data_linear <- function(data,nmetric,factor.names,sim.size,peptide.colname){
   
-  if(!is.factor(new_data[,paste(peptide.colname)])){
-    new_data$peptide <-as.factor(new_data$peptide.colname)  
+  if(!is.factor(guide.set[,paste(peptide.colname)])){
+    guide.set$peptide <-as.factor(guide.set$peptide.colname)  
   }
   #factorial matrix  
-  factorial <- FrF2(2^nmetric, nmetric,factor.names=factor.names)
+  factorial <- FrF2(2^nmetric, nmetric,factor.names=colnames(guide.set[,3:ncol(guide.set)]))
   
   
   tag_neg <- 0
@@ -129,12 +129,12 @@ QcClassifier_data_linear <- function(data,nmetrics,factor.names,sim.size,peptide
     data.set <- data.frame(NULL)
     if(all(factorial[i,]== rep(-1,nmetric))){
       ####### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(new_data, sim.size*(2^(nmetric)-1))
+      sample_data_k <- sample_density(guide.set, sim.size*(2^(nmetric)-1))
     }
     
     else{
       ###### Base Data set to begin with 
-      sample_data_k <- sample_density(new_data, sim.size)
+      sample_data_k <- sample_density(guide.set, sim.size)
       #sample_data_k <- robust.scale(sample_data_k)
       
       for(j in 1:ncol(sample_data_k)){

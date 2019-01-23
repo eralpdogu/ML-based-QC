@@ -18,8 +18,8 @@ add_features<-function(temp.Data){
         CUSUMneg.m[k] <- max(0,(-d-temp.Data[k,i]+CUSUMneg.m[k-1]))
         CUSUMpoz.v[k] <- max(0,(v[k]-d+CUSUMpoz.v[k-1]))
       }
-      #addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m, CUSUMpoz.v)
-      addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m)
+      addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m, CUSUMpoz.v)
+      #addfeatures<-cbind(MR,CUSUMpoz.m,CUSUMneg.m)
       colnames(addfeatures) <- paste(colnames(temp.Data)[i], colnames(addfeatures), sep = ".")
       temp.Data<-cbind(temp.Data,addfeatures) # full dataset with external features
     }

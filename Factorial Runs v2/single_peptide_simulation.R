@@ -19,23 +19,19 @@ source("robust_scaling.R")
 source("QcClassifier_data.R")
 
 #function inputs
-new_data <- guide.set
-nmetric<-ncol(new_data)-2
-factor.names = colnames(new_data[,3:ncol(new_data)])
-sim.size = sim.size
+nmetric<-ncol(guide.set)-2
+factor.names = colnames(guide.set[,3:ncol(guide.set)])
 #optional 
-new_data$peptide <-as.factor(new_data$peptide)
+guide.set$peptide <-as.factor(guide.set$peptide)
 
 #optional 
 peptide.colname <-"peptide"
 
-d1 <- QcClassifier_data_step(new_data,nmetric,factor.names,sim.size,peptide.colname)
+d1 <- QcClassifier_data_step(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
+d2 <- QcClassifier_data_var(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
+d3 <- QcClassifier_data_linear(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
 
-#d2 <- QcClassifier_data_var(new_data,nmetric,factor.names,sim.size,peptide.colname)
-#d3 <- QcClassifier_data_linear(new_data,nmetric,factor.names,sim.size,peptide.colname)
-
-d<-d1
-#d<-rbind(d1,d2,d3)
+d<-rbind(d1,d2, d3)
 ## 80% of the sample size
 smp_size <- floor(0.8 * nrow(d))
 
@@ -60,25 +56,85 @@ rf_model <- h2o.randomForest(         ## h2o.randomForest function
   x= colnames(train_h2o),
   y= "RESPONSE",
   model_id = "rf_model",    ## name the model in H2O
-  ntrees = 200,                  ##   not required, but helps use Flow
+  nfolds = 10,
+  ntrees = 50,                  ##   not required, but helps use Flow
   ## use a maximum of 200 trees to create the
   ##  random forest model. The default is 50.
   stopping_rounds = 2,           ## Stop fitting new trees when the 2-tree
   ##  average is within 0.001 (default) of 
   ##  the prior two 2-tree averages.
   ##  Can be thought of as a convergence setting
-  score_each_iteration = T,     
+  score_each_iteration = T,
+  max_depth = 50,
   seed = 123) 
 
-summary(rf_model)    
-
-boxplot(train,horizontal = T, las=1, cex.axis = 0.5)
-
-cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
-cf
-
+return(rf_model)    
 }
 
-QCClassifierTrain(guide.set, 500)
+#SIMULATION for PERFORMANCE####################################
+sequence<-seq(10, 2500, 50)
+results<-matrix(NA, 100000, 6)
+for(i in sequence){
+  cf<- data.frame(h2o.confusionMatrix(QCClassifierTrain(guide.set,i),valid = T),stringsAsFactors = F)
+  sens<-cf[1,1]/(cf[1,1]+cf[2,1])
+  spec<-cf[2,2]/(cf[1,2]+cf[2,2])
+  acc<-(cf[1,1]+cf[2,2])/(cf[1,1]+cf[2,1]+cf[1,2]+cf[2,2])
+  err1<-cf[1,3]
+  err2<-cf[2,3]
+  err3<-cf[3,3]
+  results[i,]<-cbind(sens,spec,acc,err1,err2,err3)
+}
+results<-as.data.frame(cbind(sequence,results[complete.cases(results),]))
+results<-results[,c(1,4:6)]
+colnames(results)<-c("Simulation.size", "Accuracy", "False positive rate", "False negative rate")
+
+results_melt <- melt(results,id.vars ="Simulation.size")
+ggplot(results_melt, aes(Simulation.size, value)) + 
+  geom_point()+
+  geom_smooth()+
+  ylab("Probability")+
+  xlab("Simulation size")+
+  facet_wrap(~variable,scales = "free")+
+  theme_light()
+
+#########################################################################
+
+#SRM example
+QCClassifierTrain(guide.set[1:2556,], sim.size=1000)
+RESPONSE<-NA
+Test.set<-guide.set[1:2556,]
+Test.set<-cbind(Test.set, RESPONSE)
 QCClassifierTest(Test.set)
-QCClassifierInterpret(train, Test.set.scale, rf_model, 48)
+#DDA example
+QCClassifierTest(rbind(guide.set[101:838,],test.set[1:200,]))
+#QCClassifierInterpret(train, Test.set.scale, rf_model, 48)
+
+
+g1<-ggplot(guide.set, aes(idfile, RT)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")
+
+g2<-ggplot(guide.set, aes(idfile, TotalArea)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")
+
+g3<-ggplot(guide.set, aes(idfile, FWHM)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")
+
+g4<-ggplot(guide.set, aes(idfile, MassAccu)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")
+grid.arrange(g1,g2,g3,g4, ncol=1)
+
+QCClassifierTrain(test.set,1000)
+QCClassifierTest(test.set)
+
+g1<-ggplot(test.set[1:500,], aes(idfile, RT)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")

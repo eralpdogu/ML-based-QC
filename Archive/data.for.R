@@ -29,7 +29,7 @@ ind <- which(with( test.set, (test.set$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carb
 test.set<-test.set[-ind,]
 test.set$PepSeq<- gsub("\\(Carbamidomethyl\\)","",test.set$PepSeq)
 test.set<-test.set[,-c(2)]
-colnames(test.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'MassAccu','FWHM')
+colnames(test.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'FWHM','MassAccu')
 test.set[test.set$RT=='NULL',]<-NA
 test.set<-test.set[complete.cases(test.set),]
 test.set$RT<-as.numeric(as.character(test.set$RT))
@@ -37,7 +37,9 @@ test.set$TotalArea<-as.numeric(as.character(test.set$TotalArea))
 test.set$MassAccu<-as.numeric(as.character(test.set$MassAccu))
 test.set$FWHM<-as.numeric(as.character(test.set$FWHM))
 
-Test.set<-test.set
+
+Test.set<-test.set[1:1500,]
+Test.set<-cbind(Test.set, RESPONSE=rep("NA",1500))
 
 setwd("/Users/ed/GitHub/ML-based-QC/Factorial Runs v2")
 
