@@ -100,41 +100,49 @@ ggplot(results_melt, aes(Simulation.size, value)) +
 #########################################################################
 
 #SRM example
-QCClassifierTrain(guide.set[1:2556,], sim.size=1000)
+QCClassifierTrain(guide.set[1:2556,], sim.size=100)
 RESPONSE<-NA
 Test.set<-guide.set[1:2556,]
 Test.set<-cbind(Test.set, RESPONSE)
 QCClassifierTest(Test.set)
+
 #DDA example
+QCClassifierTrain(guide.set,1000)
+QCClassifierTest(rbind(guide.set[101:838,]))
 QCClassifierTest(rbind(guide.set[101:838,],test.set[1:200,]))
-#QCClassifierInterpret(train, Test.set.scale, rf_model, 48)
-
-
-g1<-ggplot(guide.set, aes(idfile, RT)) + 
-  geom_line()+
-  #ylim(600, 1000)+
-  facet_wrap(~peptide,scales = "free")
-
-g2<-ggplot(guide.set, aes(idfile, TotalArea)) + 
-  geom_line()+
-  #ylim(600, 1000)+
-  facet_wrap(~peptide,scales = "free")
-
-g3<-ggplot(guide.set, aes(idfile, FWHM)) + 
-  geom_line()+
-  #ylim(600, 1000)+
-  facet_wrap(~peptide,scales = "free")
-
-g4<-ggplot(guide.set, aes(idfile, MassAccu)) + 
-  geom_line()+
-  #ylim(600, 1000)+
-  facet_wrap(~peptide,scales = "free")
-grid.arrange(g1,g2,g3,g4, ncol=1)
-
-QCClassifierTrain(test.set,1000)
-QCClassifierTest(test.set)
 
 g1<-ggplot(test.set[1:500,], aes(idfile, RT)) + 
   geom_line()+
   #ylim(600, 1000)+
   facet_wrap(~peptide,scales = "free")
+#QCClassifierInterpret(train, Test.set.scale, rf_model, 48)
+
+ggplot(guide.set, aes(idfile, RT)) + 
+  geom_line()+
+  ylab("Retention time (sec)")+
+  xlab("Run ID")+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")+
+  theme_light()
+
+ggplot(guide.set, aes(idfile, TotalArea)) + 
+  geom_line()+
+  ylab("Total peak area")+
+  xlab("Run ID")+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")+
+  theme_light()
+
+ggplot(guide.set, aes(idfile, FWHM)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")+
+  
+
+ggplot(guide.set, aes(idfile, MassAccu)) + 
+  geom_line()+
+  #ylim(600, 1000)+
+  facet_wrap(~peptide,scales = "free")
+grid.arrange(g1,g2, ncol=1)
+
+

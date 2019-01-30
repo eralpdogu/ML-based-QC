@@ -59,8 +59,9 @@
   Results_annotated<-t(plyr::ldply(Results_annotated, rbind))
   colnames(Results)<-levels(Test.set$peptide)
   colnames(Results_annotated)<-levels(Test.set$peptide)
-  boxplot(Test.set.scale,horizontal = T, las=1, cex.axis = 0.5)
-  dim(Results)
+  
+  g0<-ggplot(stack(Test.set.scale), aes(x=ind, y=values))+geom_boxplot()+coord_flip()+xlab("Features")+ylab("Values")
+  
   Results<-data.frame(RUN=1:(dim(Results)[1]), Results)
   Results_annotated<-data.frame(RUN=1:(dim(Results)[1]), Results_annotated)
   
@@ -82,7 +83,7 @@
     removeGrid()+
     scale_fill_gradient(low = "blue", high = "red",name = "Probability") 
   
-  grid.arrange(g2)
+  grid.arrange(g2,g0)
 
 }
 
