@@ -13,7 +13,7 @@
   source("robust_scaling.R")
   
   beta=+2
-  sim.size=50
+  sim.size=25
   
   sample_density_sim <- function(guide.set, peptide, n){
     sample_data<-c()
@@ -95,7 +95,7 @@
                   Data.set[[7]],
                   Data.set[[8]])
  
-  Test.set<-Data.set
+  #Test.set<-Data.set
   
   QCClassifierTest(Data.set)
   

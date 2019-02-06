@@ -16,85 +16,36 @@
 #' # Calculate change point statistics
 #' QcClassifierTrain(guide.set = sampleData[1:20,])
 
-QcClassifierTrain <- function(guide.set, sim.size=1000){
+QCClassifierTrain<- function(guide.set, sim.size){
   
   source("auto_add_features.R")
   source("sample_density_function.R")
+  source("boxcox_transformation.R")
+  source("robust_scaling.R")
+  source("QcClassifier_data.R")
   
-  factorial <- read_xlsx("Factorialcombinatins.xlsx",sheet = 1)
-  
+  #function inputs
+  nmetric<-ncol(guide.set)-2
+  factor.names = colnames(guide.set[,3:ncol(guide.set)])
+  #optional 
   guide.set$peptide <-as.factor(guide.set$peptide)
   
-  tag_neg <- 0
+  #optional 
+  peptide.colname <-"peptide"
   
-  data <- data.frame(NULL)
+  d1 <- QcClassifier_data_step(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
+  d2 <- QcClassifier_data_var(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
+  d3 <- QcClassifier_data_linear(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
   
-  for(i in 2:nrow(factorial)){
-    data.set <- data.frame(NULL)
-    if(i == 2){
-      ####### In cntrol observation ~ 5* sim size  the of the actual 
-      sample_data_k <- sample_density(guide.set, sim.size*15)
-    }
-    
-    else{
-      ###### Base Data set to begin with 
-      sample_data_k <- sample_density(guide.set, sim.size)
-
-      for(j in 2:5){
-        #change in RT Drift for some peptides
-        if(factorial[i,j]== "+" & colnames(factorial[i,j])=="RT drift"){ 
-          beta=runif(sim.size,-3,3)
-          sample_data_k$RT <- sample_data_k$RT + beta*mad(sample_data_k$RT)
-          tag_neg <- 1 
-        }
-        
-        #change in Total Area Drift for some peptides
-        if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Total Area drift"){ 
-          beta=runif(sim.size,-3,3)
-          sample_data_k$TotalArea <- sample_data_k$TotalArea + beta*mad(sample_data_k$TotalArea)
-          tag_neg <- 1 
-        }
-        
-        #change in Mass Accu Drift for some peptides
-        if(factorial[i,j]== "+" & colnames(factorial[i,j])=="Mass Accu drift"){ 
-          beta=runif(sim.size,-3,3)
-          sample_data_k$MassAccu <- sample_data_k$MassAccu + beta*mad(sample_data_k$MassAccu)
-          tag_neg <- 1 
-        }
-        #change in FWHM Drift for some peptides
-        if(factorial[i,j]== "+" & colnames(factorial[i,j])=="FWHM drift"){
-          beta=runif(sim.size,-3,3)
-          sample_data_k$FWHM <- sample_data_k$FWHM + beta*mad(sample_data_k$FWHM)
-          tag_neg <- 1 
-        }
-        
-      }# column ends 
-    }
-    data.set <- rbind(add_features(sample_data_k))
-    #data.set[,"peptide"] <- NULL 
-    if(tag_neg == 1){
-      data.set$RESPONSE <- c("FAIL")
-      tag_neg <- 0
-    }
-    else{
-      data.set$RESPONSE <- c("PASS")
-    }
-    data <- data[,order(names(data))]
-    data.set <- data.set[,order(names(data.set))]
-    data <-rbind(data,data.set)
-  }
-  
-  data <- data[sample(nrow(data), nrow(data)), ] # shuffle the data
-  data$RESPONSE <- as.factor(data$RESPONSE)
-  
+  d<-rbind(d1,d2, d3)
   ## 80% of the sample size
-  smp_size <- floor(0.8 * nrow(data))
+  smp_size <- floor(0.8 * nrow(d))
   
   set.seed(123)
-  train_ind <- sample(seq_len(nrow(data)), size = smp_size)
+  train_ind <- sample(seq_len(nrow(d)), size = smp_size)
   
-  train <- data[train_ind,]
-  test <- data[-train_ind,]
+  train <- d[train_ind,]
+  test <- d[-train_ind,]
   
   
   #launch h2o cluster
@@ -108,21 +59,25 @@ QcClassifierTrain <- function(guide.set, sim.size=1000){
   rf_model <- h2o.randomForest(         ## h2o.randomForest function
     training_frame = train_h2o,        ## the H2O frame for training
     validation_frame = test_h2o,      ## the H2O frame for validation (not required)
-    x= colnames(train_h2o[,c(1:4,5:17)]),
+    x= colnames(train_h2o),
     y= "RESPONSE",
     model_id = "rf_model",    ## name the model in H2O
-    ntrees = 200,                  ##   not required, but helps use Flow
+    nfolds = 10,
+    ntrees = 50,                  ##   not required, but helps use Flow
     ## use a maximum of 200 trees to create the
     ##  random forest model. The default is 50.
     stopping_rounds = 2,           ## Stop fitting new trees when the 2-tree
     ##  average is within 0.001 (default) of 
     ##  the prior two 2-tree averages.
     ##  Can be thought of as a convergence setting
-    score_each_iteration = T,     
+    score_each_iteration = T,
+    max_depth = 50,
     seed = 123) 
   
-  summary(rf_model)    
+  explainer <- lime(train[,-11], rf_model, n_bins = 5)
   
-  cf<- data.frame(h2o.confusionMatrix(rf_model,valid = T),stringsAsFactors = F)
-  cf
+  results.model<-list()
+  results.model<-list(train, rf_model, explainer)
+  
+  return(results.model)
 }

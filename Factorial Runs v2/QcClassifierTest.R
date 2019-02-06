@@ -59,32 +59,57 @@
   Results_annotated<-t(plyr::ldply(Results_annotated, rbind))
   colnames(Results)<-levels(Test.set$peptide)
   colnames(Results_annotated)<-levels(Test.set$peptide)
-  
-  g0<-ggplot(stack(Test.set.scale), aes(x=ind, y=values))+geom_boxplot()+coord_flip()+xlab("Features")+ylab("Values")
+
+  Test.set.feautures<-cbind(Test.set.scale, Time=1:(dim(Test.set.scale)[1]))
+  Test.set.feautures<-melt(Test.set.feautures, id.vars = "Time")
+  colnames(Test.set.feautures)[2]<-"Attributes"
+   
+  g0<-ggplot(Test.set.feautures[-1,], aes(Time, Attributes)) + 
+    geom_tile(aes(fill = value), colour = "white") +
+    labs(x = "Time",y = "Features and metrics")+
+    removeGrid()+
+    scale_y_discrete(expand=c(0,0))+
+    scale_fill_gradient(low = "white", high = "red",name = "Values")+
+    ggtitle(label = "Root causes map")+
+    theme(legend.position="bottom")
   
   Results<-data.frame(RUN=1:(dim(Results)[1]), Results)
-  Results_annotated<-data.frame(RUN=1:(dim(Results)[1]), Results_annotated)
+  # Results_annotated<-data.frame(RUN=1:(dim(Results)[1]), Results_annotated)
+  # Results_melt <- melt(Results_annotated,id.vars ="RUN")
+  # colors <- c("red","blue")
+  # g1<-ggplot(Results_melt, aes(RUN, variable)) + 
+  #   geom_tile(aes(fill = value), colour = "white") +
+  #   labs(x = "Time",y = "Probability of fail")+
+  #   coord_equal()+
+  #   ylab("Overall")+
+  #   rotateTextX()+
+  #   scale_fill_manual(values=colors, name="Label")
   
-  Results_melt <- melt(Results_annotated,id.vars ="RUN")
-  colors <- c("red","blue")
-  g1<-ggplot(Results_melt, aes(RUN, variable)) + 
-    geom_tile(aes(fill = value), colour = "white") +
-    labs(x = "RUN",y = "Probability of FAIL")+
-    coord_equal()+
-    ylab("Overall")+
-    rotateTextX()+
-    scale_fill_manual(values=colors, name="Label")
-  
-  Results_melt <- melt(Results,id.vars ="RUN")
+  Results_melt <- melt(Results[-1,],id.vars ="RUN")
   g2<-ggplot(Results_melt, aes(RUN, variable)) + 
     geom_tile(aes(fill = value), colour = "white") +
-    labs(x = "RUN",y = "Probability of FAIL")+
-    rotateTextX()+
+    labs(x = "Time",y = "Probability of fail")+
     removeGrid()+
-    scale_fill_gradient(low = "blue", high = "red",name = "Probability") 
-  
-  grid.arrange(g2,g0)
-
+    scale_y_discrete(expand=c(0,0))+
+    scale_fill_gradient(low = "white", high = "red",name = "Probability")+
+    ggtitle(label = "Decision map")+
+    theme(legend.position="bottom")
+  gA <- ggplotGrob(g2)
+  gB <- ggplotGrob(g0)
+  maxWidth = grid::unit.pmax(gA$widths[2:5], gB$widths[2:5])
+  gA$widths[2:5] <- as.list(maxWidth)
+  gB$widths[2:5] <- as.list(maxWidth)
+  grid.arrange(gA, ncol=1)  
+  # results.test<-list()
+  # 
+  # explanation_caret <- explain(
+  #   x = Test.set.scale, 
+  #   explainer = results.model[[3]], 
+  #   n_labels = 1,
+  #   n_features = 5
+  # )
+  # results.test<-list(Results, Results_annotated, explanation_caret)
+  # return(results.test)
 }
 
-
+  

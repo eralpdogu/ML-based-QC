@@ -68,7 +68,12 @@ rf_model <- h2o.randomForest(         ## h2o.randomForest function
   max_depth = 50,
   seed = 123) 
 
-return(rf_model)    
+explainer <- lime(train[,-11], rf_model, n_bins = 5)
+
+results.model<-list()
+results.model<-list(train, rf_model, explainer)
+
+return(results.model)
 }
 
 #SIMULATION for PERFORMANCE####################################
@@ -87,6 +92,9 @@ for(i in sequence){
 results<-as.data.frame(cbind(sequence,results[complete.cases(results),]))
 results<-results[,c(1,4:6)]
 colnames(results)<-c("Simulation.size", "Accuracy", "False positive rate", "False negative rate")
+
+results<-results.DDA
+results<-results.SRM
 
 results_melt <- melt(results,id.vars ="Simulation.size")
 ggplot(results_melt, aes(Simulation.size, value)) + 
@@ -109,7 +117,11 @@ QCClassifierTest(Test.set)
 #DDA example
 QCClassifierTrain(guide.set,1000)
 QCClassifierTest(rbind(guide.set[101:838,]))
-QCClassifierTest(rbind(guide.set[101:838,],test.set[1:200,]))
+RESPONSE<-NA
+test.set<-test.set[,-7]
+new.test<-rbind(guide.set[101:838,],test.set[1:100,])
+new.test<-cbind(new.test, RESPONSE)
+QCClassifierTest(new.test)
 
 g1<-ggplot(test.set[1:500,], aes(idfile, RT)) + 
   geom_line()+
@@ -123,7 +135,7 @@ ggplot(guide.set, aes(idfile, RT)) +
   xlab("Run ID")+
   #ylim(600, 1000)+
   facet_wrap(~peptide,scales = "free")+
-  theme_light()
+  colour=variable
 
 ggplot(guide.set, aes(idfile, TotalArea)) + 
   geom_line()+

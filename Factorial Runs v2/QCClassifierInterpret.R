@@ -1,16 +1,13 @@
 QCClassifierInterpret<-function(trainData, Test.set.scale, model, caseNumber){
-  explainer <- lime(train, rf_model, n_bins = 5)
-  explanation <- explain(Test.set.scale, explainer, n_bins = 5)
+  
+  explainer <- lime(train[,-11], rf_model, n_bins = 5)
+  
   explanation_caret <- explain(
-    x = Test.set, 
+    x = Test.set.scale, 
     explainer = explainer, 
-    n_permutations = 5000,
-    dist_fun = "gower",
-    kernel_width = .75,
-    n_features = 10, 
-    feature_select = "highest_weights",
-    labels = "Yes"
+    n_labels = 1,
+    n_features = 3
   )
   
-  plot_features(explanation[40:50,])
+  plot_features(explanation_caret[explanation_caret$case==236:240,])
 }
