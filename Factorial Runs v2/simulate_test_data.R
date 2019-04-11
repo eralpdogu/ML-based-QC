@@ -12,7 +12,7 @@
   source("auto_add_features.R")
   source("robust_scaling.R")
   
-  beta=+2
+  beta=-3
   sim.size=25
   
   sample_density_sim <- function(guide.set, peptide, n){
@@ -97,5 +97,6 @@
  
   #Test.set<-Data.set
   
-  QCClassifierTest(Data.set)
+  MSstatsQC.ML.testR(Data.set, guide.set)
   
+  write.csv(Data.set, "SimData.csv")

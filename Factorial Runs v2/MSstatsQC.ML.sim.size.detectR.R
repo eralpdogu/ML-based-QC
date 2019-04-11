@@ -1,0 +1,28 @@
+MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
+  sequence<-seq(sim.start, sim.end, 50)
+  results<-matrix(NA, 100000, 4)
+  for(i in sequence){
+    rf_model<-QCClassifierTrain(guide.set,i)
+    cf<- data.frame(h2o.confusionMatrix(rf_model),stringsAsFactors = F)
+    sens<-cf[1,1]/(cf[1,1]+cf[2,1])
+    err1<-cf[1,3]
+    err3<-cf[3,3]
+    results[i,]<-cbind(i,sens,err1,err3)
+  }
+  results<-as.data.frame(results[complete.cases(results),])
+  colnames(results)<-c("Simulation.size", "Accuracy", "False positive rate", "False negative rate")
+  
+  results_melt <- melt(results,id.vars ="Simulation.size", 
+                       measure.vars=c("Accuracy", "False positive rate", "False negative rate"))
+  ggplot(results_melt, aes(Simulation.size, value)) + 
+    geom_point()+
+    geom_smooth(aes(color="red"), show.legend = FALSE)+
+    ylab("Probability")+
+    xlab("Simulation size")+
+    facet_wrap(~variable,scales = "free")+
+    theme(text = element_text(size=12),
+          axis.text.x = element_text(angle=45, hjust=1))
+}
+
+MSstatsQC.ML.sim.size.detector(guide.set, 10, 300)
+
