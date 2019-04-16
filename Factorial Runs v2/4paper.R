@@ -58,15 +58,19 @@ ggplot(Simdata_melt, aes(Run, value, color=variable)) +
 #FIGURE 4-5
 #SRM example
 guide.set<-guide.set.SRM
-MSstatsQC.ML.trainR(guide.set[1:2556,], sim.size=2000)
+MSstatsQC.ML.trainR(guide.set[1:2556,], sim.size=1000)
+
 RESPONSE<-NA
-Test.set<-guide.set[1:2556,]
-Test.set<-cbind(Test.set, RESPONSE)
-MSstatsQC.ML.testR(Test.set, Test.set)
+Test.set<-cbind(guide.set, RESPONSE)
+MSstatsQC.ML.testR(Test.set, guide.set)
+
+RESPONSE<-NA
+Test.set<-cbind(test.set, RESPONSE)
+MSstatsQC.ML.testR(Test.set[1:5000,], guide.set)
 
 #DDA example
 guide.set<-guide.set.DDA
-MSstatsQC.ML.trainR(guide.set,1000)
+MSstatsQC.ML.trainR(guide.set,10)
 MSstatsQC.ML.testR(rbind(guide.set[1:838,]), guide.set)
 RESPONSE<-NA
 new.test<-rbind(guide.set[1:838,], test.set[1:160,])

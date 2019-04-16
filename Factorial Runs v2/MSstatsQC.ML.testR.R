@@ -17,15 +17,33 @@
 #' # Calculate change point statistics
 #' QcClassifierTrain(guide.set = sampleData[1:20,], peptide = "LVNELTEFAK", method = "randomforest")
 
-  MSstatsQC.ML.testR<- function(Test.set, guide.set){
+  MSstatsQC.ML.testR<- function(Test.set, guide.set,address=""){
   
   source("auto_add_features.R")
   source("robust_scaling.R")
+  source("boxcox_transformation.R")
   
+    if (address != FALSE) {
+      allfiles <- list.files()
+      
+      num <- 0
+      filenaming <- paste0(address,"MSstatsQC.ML.Plots")
+      finalfile <- paste0(address,"MSstatsQC.ML.Plots.pdf")
+      
+      while (is.element(finalfile, allfiles)) {
+        num <- num + 1
+        finalfile <- paste0(paste(filenaming, num, sep="-"), ".pdf")
+      }	
+      
+      pdf(finalfile, width=20, height=20)
+    }
+    
   Test.set$peptide<-as.factor(Test.set$peptide)
   guide.set$peptide<-as.factor(guide.set$peptide)
   Results<-list()
   Results_annotated<-list()
+  Test.set.features<-list()
+  interpret.plots<-list()
   
   for(i in 1:nlevels(Test.set$peptide)){
 
@@ -54,42 +72,30 @@
   #colnames(Results)[i]<-levels(Test.set$peptide)[i]
   #colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
   
+  Test.set.features[[i]]<-cbind(Test.set.scale, Time=1:(dim(Test.set.scale)[1]))
+  Test.set.features[[i]]<-melt(as.data.frame(Test.set.features[[i]]), id.vars = "Time")
+  
+  g0<-eval(substitute(ggplot(Test.set.features[[i]][-1,], aes(Time, variable)) + 
+      geom_tile(aes(fill = value), colour = "white") +
+      labs(x = "Time",y = NULL)+
+      removeGrid()+
+      scale_y_discrete(expand=c(0,0))+
+      scale_fill_gradient(low = "white", high = "red",name = "Values")+
+      ggtitle(label = levels(Test.set$peptide)[i])+
+      theme(legend.position="bottom", panel.background = element_blank(),
+            plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),
+            axis.ticks.length = unit(0, "pt"))
+      ,list(i = i)))
+  interpret.plots[[i]] <- g0
   }
   
   Results<-t(plyr::ldply(Results, rbind))
-  Results_annotated<-t(plyr::ldply(Results_annotated, rbind))
   colnames(Results)<-levels(Test.set$peptide)
-  colnames(Results_annotated)<-levels(Test.set$peptide)
-
-  Test.set.feautures<-cbind(Test.set.scale, Time=1:(dim(Test.set.scale)[1]))
-  Test.set.feautures<-melt(Test.set.feautures, id.vars = "Time")
-  colnames(Test.set.feautures)[2]<-"Attributes"
-   
-  g0<-ggplot(Test.set.feautures[-1,], aes(Time, Attributes)) + 
-    geom_tile(aes(fill = value), colour = "white") +
-    labs(x = "Time",y = NULL)+
-    removeGrid()+
-    scale_y_discrete(expand=c(0,0))+
-    scale_fill_gradient(low = "white", high = "red",name = "Values")+
-    ggtitle(label = "Values of features")+
-    theme(legend.position="bottom", panel.background = element_blank(),
-          plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),
-          axis.ticks.length = unit(0, "pt"))
+  
   
   Results<-data.frame(RUN=1:(dim(Results)[1]), Results)
-  # Results_annotated<-data.frame(RUN=1:(dim(Results)[1]), Results_annotated)
-  # Results_melt <- melt(Results_annotated,id.vars ="RUN")
-  # colors <- c("red","blue")
-  # g1<-ggplot(Results_melt, aes(RUN, variable)) + 
-  #   geom_tile(aes(fill = value), colour = "white") +
-  #   labs(x = "Time",y = "Probability of fail")+
-  #   coord_equal()+
-  #   ylab("Overall")+
-  #   rotateTextX()+
-  #   scale_fill_manual(values=colors, name="Label")
-  
   Results_melt <- melt(Results[-1,],id.vars ="RUN")
-  g2<-ggplot(Results_melt, aes(RUN, variable)) + 
+  decision.map<-ggplot(Results_melt, aes(RUN, variable)) + 
     geom_tile(aes(fill = value), colour = "white") +
     labs(x = "Time",y = NULL)+
     removeGrid()+
@@ -100,22 +106,24 @@
           plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),
           axis.ticks.length = unit(0, "pt"))
   
-  gA <- ggplotGrob(g2)
-  gB <- ggplotGrob(g0)
-  maxWidth = grid::unit.pmax(gA$widths[2:5], gB$widths[2:5])
-  gA$widths[2:5] <- as.list(maxWidth)
-  gB$widths[2:5] <- as.list(maxWidth)
-  grid.arrange(gA, ncol=1)  
-  results.test<-list()
-  # 
-  # explanation_caret <- explain(
-  # x = Test.set.scale, 
-  # explainer = results.model[[3]], 
-  # n_labels = 1,
-  # n_features = 5
-  # )
-  # results.test<-list(Results, Results_annotated, explanation_caret)
-  # return(results.test)
+  # gA <- ggplotGrob(g2)
+  # gB <- ggplotGrob(g0)
+  # maxWidth = grid::unit.pmax(gA$widths[2:5], gB$widths[2:5])
+  # gA$widths[2:5] <- as.list(maxWidth)
+  # gB$widths[2:5] <- as.list(maxWidth)
+  # grid.arrange(gA, ncol=1)  
+  
+  print(decision.map)
+  
+  message(paste("Drew the plot for final evaluation"))
+  
+  print(interpret.plots)
+  
+  message(paste("Drew the plots for interpretation"))
+  
+  if (address!=FALSE) {
+    dev.off()
+  }
 }
 
   

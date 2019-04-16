@@ -16,13 +16,13 @@
 #' # Calculate change point statistics
 #' QcClassifierTrain(guide.set = sampleData[1:20,])
 
-MSstatsQC.ML.trainR<- function(guide.set, sim.size){
+MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
   
   source("auto_add_features.R")
   source("sample_density_function.R")
   source("boxcox_transformation.R")
   source("robust_scaling.R")
-  source("QcClassifier_data.R")
+  source("MSstatsQC.ML.trainR.R")
   
   #function inputs
   nmetric<-ncol(guide.set)-2
@@ -74,7 +74,7 @@ MSstatsQC.ML.trainR<- function(guide.set, sim.size){
     max_depth = 50,
     seed = 123) 
   
- rf_model
+  message(paste("Constructed the RF model"))
+  print(rf_model)
   
-  return(rf_model)
 }

@@ -1,8 +1,29 @@
+#' A function to train random forest classifiers for QC data
+#'
+#' @param guide.set comma-separated (.csv), metric file. It should contain a "peptide" column and the metrics columns. It should also include "Annotations" for each run.
+#' @param Test.set comma-separated (.csv), metric file. It should contain a "peptide" column and the metrics columns. It should also include "Annotations" for each run.
+#' @param peptide the name of peptide of interest.
+#' @param method the method used to model. Two values can be assigned, "randomforest" or "neuralnetwork".
+#' @export
+#' @import caret ggplot2 MASS dplyr
+#' @import h2o
+#' @examples
+#' # First process the data to make sure it's ready to use
+#' sampleData <- MSstatsQC::DataProcess(S9Site54)
+#' head(sampleData)
+#' # Find the name of the peptides
+#' levels(sampleData$Precursor)
+#' # Calculate change point statistics
+#' QcClassifierTrain(guide.set = sampleData[1:20,])
+
 MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
+  
+  source("MSstatsQC.ML.trainR.R")
+  
   sequence<-seq(sim.start, sim.end, 50)
   results<-matrix(NA, 100000, 4)
   for(i in sequence){
-    rf_model<-QCClassifierTrain(guide.set,i)
+    rf_model<-MSstatsQC.ML.trainR(guide.set,i)
     cf<- data.frame(h2o.confusionMatrix(rf_model),stringsAsFactors = F)
     sens<-cf[1,1]/(cf[1,1]+cf[2,1])
     err1<-cf[1,3]
