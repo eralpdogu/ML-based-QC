@@ -1,6 +1,6 @@
 library(caret)
 library(lime)
-
+as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
 #######SRM DATA for the paper#####################
 
 setwd("/Users/ed/Github/ML-based-QC")
@@ -18,10 +18,11 @@ ind <- which(with( guide.set, (guide.set$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Ca
 guide.set<-guide.set[-ind,]
 guide.set$PepSeq<- gsub("\\(Carbamidomethyl\\)","",guide.set$PepSeq)
 guide.set<-guide.set[,-c(2)]
-colnames(guide.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'FWHM','MassAccu')
-guide.set[guide.set$RT=='NULL',]<-NA
-guide.set<-guide.set[complete.cases(test.set),]
-guide.set$RT<-as.numeric(as.character(guide.set$RT))
+colnames(guide.set)<-c('idfile', 'peptide','RT', 'TotalArea','MassAccu','FWHM')
+guide.set[guide.set$RT==0,]<-NA
+guide.set<-guide.set[complete.cases(guide.set),]
+guide.set$peptide<-as.factor(guide.set$peptide)
+guide.set$RT<-as.numeric.factor((guide.set$RT))
 guide.set$TotalArea<-as.numeric(as.character(guide.set$TotalArea))
 guide.set$MassAccu<-as.numeric(as.character(guide.set$MassAccu))
 guide.set$FWHM<-as.numeric(as.character(guide.set$FWHM))
@@ -59,8 +60,8 @@ colnames(guide.set)[3]<-"peptide"
 guide.set$peptide<- gsub("\\(Carbamidomethyl\\)","",guide.set$peptide)
 guide.set[guide.set$RT==0,]<-NA
 guide.set[complete.cases(guide.set),]
-guide.set$RT<-as.numeric(guide.set$RT)
-guide.set$TotalArea<-as.numeric(guide.set$TotalArea)
+guide.set$RT<-as.numeric.factor(guide.set$RT)
+guide.set$TotalArea<-as.numeric.factor(guide.set$TotalArea)
 guide.set$peptide<-as.factor(guide.set$peptide)
 guide.set<-guide.set[,-c(2,4)]
 
@@ -70,11 +71,11 @@ test.set <- read.csv('qtrap_all_set.csv')
 #remove repeated measurements and reshape the test dataset
 options(scipen = 999)
 setwd("/Users/ed/Dropbox/3. MSstatsQC paper 3/4. DATA")
-test.set <-read.csv('lumos_all_set.csv')
+test.set <-read.csv('all-lumos-2017-with-annotations.csv')
 ind <- which(with( test.set, (test.set$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carbamidomethyl)AK" | test.set$PepSeq=="TC(Carbamidomethyl)VADESHAGC(Carbamidomethyl)EK") ))
 test.set<-test.set[-ind,]
 test.set$PepSeq<- gsub("\\(Carbamidomethyl\\)","",test.set$PepSeq)
-test.set<-test.set[,-c(2)]
+test.set<-test.set[,-c(2:4, 7)]
 colnames(test.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'FWHM','MassAccu')
 test.set[test.set$RT=='NULL',]<-NA
 test.set<-test.set[complete.cases(test.set),]
@@ -82,3 +83,23 @@ test.set$RT<-as.numeric(as.character(test.set$RT))
 test.set$TotalArea<-as.numeric(as.character(test.set$TotalArea))
 test.set$MassAccu<-as.numeric(as.character(test.set$MassAccu))
 test.set$FWHM<-as.numeric(as.character(test.set$FWHM))
+
+#test set with annotations only
+options(scipen = 999)
+setwd("/Users/ed/Dropbox/3. MSstatsQC paper 3/4. DATA")
+test.set <-read.csv('all-lumos-2017-with-annotations.csv')
+ind <- which(with( test.set, (test.set$PepSeq=="EYEATLEEC(Carbamidomethyl)C(Carbamidomethyl)AK" | test.set$PepSeq=="TC(Carbamidomethyl)VADESHAGC(Carbamidomethyl)EK") ))
+test.set<-test.set[-ind,]
+test.set$PepSeq<- gsub("\\(Carbamidomethyl\\)","",test.set$PepSeq)
+test.set<-test.set[test.set$Op_annotation!="NULL",]
+test.set<-test.set[,-c(2:4, 7)]
+colnames(test.set)<-c('idfile', 'peptide','RT', 'TotalArea', 'FWHM','MassAccu')
+test.set[test.set$RT=='NULL',]<-NA
+test.set<-test.set[complete.cases(test.set),]
+test.set$RT<-as.numeric(as.character(test.set$RT))
+test.set$TotalArea<-as.numeric(as.character(test.set$TotalArea))
+test.set$MassAccu<-as.numeric(as.character(test.set$MassAccu))
+test.set$FWHM<-as.numeric(as.character(test.set$FWHM))
+
+test.set.DDA.anno<-test.set
+

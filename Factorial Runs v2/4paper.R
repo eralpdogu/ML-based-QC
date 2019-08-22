@@ -11,6 +11,8 @@ library(reshape2)
 library(lime)
 library(dplyr)
 
+setwd("/Users/ed/GitHub/ML-based-QC/Factorial Runs v2")
+
 #FIGURE 1
 #raw data plots
 SimData<-cbind(SimData, SimData[,4])
@@ -58,25 +60,27 @@ ggplot(Simdata_melt, aes(Run, value, color=variable)) +
 #FIGURE 4-5
 #SRM example
 guide.set<-guide.set.SRM
-MSstatsQC.ML.trainR(guide.set[1:2556,], sim.size=1000)
+MSstatsQC.ML.trainR(guide.set, sim.size=10)
 
 RESPONSE<-NA
-Test.set<-cbind(guide.set, RESPONSE)
+Test.set<-rbind(guide.set[1:300,],test.set.SRM[1:200,])
+test.set<-cbind(Test.set, RESPONSE)
 MSstatsQC.ML.testR(Test.set, guide.set)
 
 RESPONSE<-NA
-Test.set<-cbind(test.set, RESPONSE)
-MSstatsQC.ML.testR(Test.set[1:5000,], guide.set)
+Test.set<-cbind(test.set.SRM, RESPONSE)
+MSstatsQC.ML.testR(test.set.SRM, guide.set)
 
 #DDA example
 guide.set<-guide.set.DDA
-MSstatsQC.ML.trainR(guide.set,10)
-MSstatsQC.ML.testR(rbind(guide.set[1:838,]), guide.set)
-RESPONSE<-NA
-new.test<-rbind(guide.set[1:838,], test.set[1:160,])
-new.test<-cbind(new.test, RESPONSE)
+test.set<-test.set.DDA2
+MSstatsQC.ML.trainR(guide.set, sim.size=1000, guide.set.annotations = guide.set.DDA.anno)
+MSstatsQC.ML.trainR(guide.set, sim.size=1000)
+
+new.test<-rbind(guide.set[1:200,], test.set[test.set$idfile>41234&test.set$idfile<41505 ,])
+new.test<-rbind(guide.set, test.set[1:500,])
 MSstatsQC.ML.testR(new.test, guide.set)
 
-MSstatsQC.ML.trainR(test.set, 1000)
-MSstatsQC.ML.testR(test.set[,], test.set)
+new.test<-rbind(guide.set, test.set)
+MSstatsQC.ML.testR(new.test, guide.set)
 

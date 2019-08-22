@@ -16,13 +16,12 @@
 #' # Calculate change point statistics
 #' QcClassifierTrain(guide.set = sampleData[1:20,])
 
-MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
+MSstatsQC.ML.trainR<- function(guide.set, sim.size, address="", guide.set.annotations=NULL){
   
   source("auto_add_features.R")
   source("sample_density_function.R")
   source("boxcox_transformation.R")
   source("robust_scaling.R")
-  source("MSstatsQC.ML.trainR.R")
   
   #function inputs
   nmetric<-ncol(guide.set)-2
@@ -33,11 +32,18 @@ MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
   #optional 
   peptide.colname <-"peptide"
   
-  d1 <- QcClassifier_data_step(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
-  d2 <- QcClassifier_data_var(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
-  d3 <- QcClassifier_data_linear(guide.set,nmetric,factor.names,sim.size*1,peptide.colname)
+  d1 <- QcClassifier_data_step(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=3, U=10)
+  d2 <- QcClassifier_data_var(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=3, U=10)
+  d3 <- QcClassifier_data_linear(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=3, U=10)
   
-  d<-rbind(d1,d2, d3)
+  d4 <- QcClassifier_data_step(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=-10, U=-3)
+  d5 <- QcClassifier_data_var(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=-10, U=-3)
+  d6 <- QcClassifier_data_linear(guide.set,nmetric,factor.names,sim.size*1,peptide.colname, L=-10, U=-3)
+  if (is.null(dim(guide.set.annotations))==TRUE) {d<-rbind(d1,d2, d3, d4,d5,d6)}
+  else{
+  d7 <- QcClassifier_data_annotated(guide.set, guide.set.annotations)
+  d<-rbind(d1,d2, d3, d4,d5,d6, d7)}
+  #d<-rbind(d1,d2, d3)
   ## 80% of the sample size
   smp_size <- floor(0.8 * nrow(d))
   
@@ -46,7 +52,6 @@ MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
   
   train <- d[train_ind,]
   test <- d[-train_ind,]
-  
   
   #launch h2o cluster
   localH2O <- h2o.init(nthreads = -1)
@@ -62,8 +67,8 @@ MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
     x= colnames(train_h2o),
     y= "RESPONSE",
     model_id = "rf_model",    ## name the model in H2O
-    nfolds = 10,
-    ntrees = 100,                  ##   not required, but helps use Flow
+    nfolds = 5,
+    ntrees = 50,                  ##   not required, but helps use Flow
     ## use a maximum of 200 trees to create the
     ##  random forest model. The default is 50.
     stopping_rounds = 2,           ## Stop fitting new trees when the 2-tree
@@ -71,7 +76,7 @@ MSstatsQC.ML.trainR<- function(guide.set, sim.size, address=""){
     ##  the prior two 2-tree averages.
     ##  Can be thought of as a convergence setting
     score_each_iteration = F,
-    max_depth = 50,
+    max_depth = 20,
     seed = 123) 
   
   message(paste("Constructed the RF model"))

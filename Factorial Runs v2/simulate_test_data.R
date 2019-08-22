@@ -12,8 +12,8 @@
   source("auto_add_features.R")
   source("robust_scaling.R")
   
-  beta=-3
-  sim.size=25
+  beta=-2
+  sim.size=50
   
   sample_density_sim <- function(guide.set, peptide, n){
     sample_data<-c()
