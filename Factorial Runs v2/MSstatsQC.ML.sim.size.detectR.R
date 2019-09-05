@@ -19,11 +19,12 @@
 MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
   
   source("MSstatsQC.ML.trainR.R")
+  source("MSstatsQC.ML.train_data.R") 
   
   sequence<-seq(sim.start, sim.end, 50)
   results<-matrix(NA, 100000, 4)
   for(i in sequence){
-    rf_model<-MSstatsQC.ML.trainR(guide.set,i)
+    rf_model<-MSstatsQC.ML.trainR(guide.set, i, guide.set.annotations = NULL)
     cf<- data.frame(h2o.confusionMatrix(rf_model),stringsAsFactors = F)
     sens<-cf[1,1]/(cf[1,1]+cf[2,1])
     err1<-cf[1,3]
@@ -45,5 +46,5 @@ MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
           axis.text.x = element_text(angle=45, hjust=1))
 }
 
-MSstatsQC.ML.sim.size.detector(guide.set, 10, 300)
+MSstatsQC.ML.sim.size.detectR(guide.set, 10, 1000)
 

@@ -75,12 +75,12 @@
   #colnames(Results)[i]<-levels(Test.set$peptide)[i]
   #colnames(Results_annotated)[i]<-levels(Test.set$peptide)[i]
   
-  Test.set.features[[i]]<-cbind(Test.set.scale.temp,idfile=Test.set.scale[,1])
+  Test.set.features[[i]]<-cbind(Test.set.scale.temp,idfile=1:length(Test.set.scale[,1]))
   Test.set.features[[i]]<-melt(as.data.frame(Test.set.features[[i]]), id.vars = "idfile")
   
   g0<-eval(substitute(ggplot(Test.set.features[[i]][-1,], aes(idfile, variable)) + 
       geom_tile(aes(fill = value), colour = "white") +
-      labs(x = "idfile",y = NULL)+
+      labs(x = "Time",y = NULL)+
       removeGrid()+
       scale_y_discrete(expand=c(0,0))+
       scale_fill_gradient(low = "white", high = "red",name = "Values")+
