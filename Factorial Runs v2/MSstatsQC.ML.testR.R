@@ -83,7 +83,7 @@
       labs(x = "Time",y = NULL)+
       removeGrid()+
       scale_y_discrete(expand=c(0,0))+
-      scale_fill_gradient(low = "white", high = "red",name = "Values")+
+      scale_fill_gradient(low = "white", high = "darkorange",name = "Feature values")+
       ggtitle(label = levels(Test.set$peptide)[i])+
       theme(legend.position="bottom", panel.background = element_blank(),
             plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),

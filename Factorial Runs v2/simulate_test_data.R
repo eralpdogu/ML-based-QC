@@ -121,8 +121,9 @@
   #Simdata_melt <- melt(SimData,id.vars =c("Precursor","Run"))
   
   ggplot(SimData, aes(Run, RetentionTime)) + 
+    geom_point(size = 0.5)+
     geom_line()+ 
-    geom_smooth(method="loess")+
+    #geom_smooth(method="lm", col="black")+
     # geom_smooth(data=filter(Simdata_melt, 
     #                         Simdata_melt$variable == "RetentionTime"&Simdata_melt$Run>25), 
     #             aes(Run, value), method = "lm") +
