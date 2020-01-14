@@ -77,15 +77,20 @@
   
   Test.set.features[[i]]<-cbind(Test.set.scale.temp,idfile=1:length(Test.set.scale[,1]))
   Test.set.features[[i]]<-melt(as.data.frame(Test.set.features[[i]]), id.vars = "idfile")
-  
   g0<-eval(substitute(ggplot(Test.set.features[[i]][-1,], aes(idfile, variable)) + 
       geom_tile(aes(fill = value), colour = "white") +
       labs(x = "Time",y = NULL)+
       removeGrid()+
       scale_y_discrete(expand=c(0,0))+
-      scale_fill_gradient(low = "white", high = "darkorange",name = "Feature values")+
+      scale_fill_gradient(low = "white",
+                          high = "darkorange", 
+                          #limits=c(-10, 50),
+                          #breaks=c(0,20,50),
+                          name = "Standardized and\nengineered feature values")+
       ggtitle(label = levels(Test.set$peptide)[i])+
-      theme(legend.position="bottom", panel.background = element_blank(),
+      theme(legend.title=element_text(size=8), legend.key.size = unit(0.5, "cm"), 
+            legend.key.height=unit(0.5, "cm"), legend.justification = "bottom",
+            legend.position="bottom", panel.background = element_blank(),
             plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),
             axis.ticks.length = unit(0, "pt"))
       ,list(i = i)))
@@ -116,12 +121,16 @@
     labs(x = "Time",y = NULL)+
     removeGrid()+
     scale_y_discrete(expand=c(0,0))+
-    scale_fill_gradient(low = "white", high = "red",name = "Probability")+
-    ggtitle(label = "Probability of fail")+
-    theme(legend.position="bottom", panel.background = element_blank(),
+    scale_fill_gradient(low = "white", 
+                        high = "red",
+                        limits=c(0, 1),
+                        breaks=c(0,0.5,1),
+                        name = "Probability\nof failure")+
+    theme(legend.title=element_text(size=8), legend.key.size = unit(0.5, "cm"), 
+          legend.key.height=unit(0.5, "cm"), legend.justification = "bottom",
+          legend.position="bottom", panel.background = element_blank(),
           plot.background = element_blank(), plot.margin = unit(c(0.1,0,0,0), "cm"),
           axis.ticks.length = unit(0, "pt"))
-  
   print(decision.map)
   
   message(paste("Drew the plot for final evaluation"))

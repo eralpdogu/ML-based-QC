@@ -1,3 +1,5 @@
+library(qcc)
+
 g1<-ggplot(SimData, aes(AcquiredTime, RT)) + 
   geom_point()+
   geom_smooth(method="loess")+
@@ -35,11 +37,10 @@ g4<-ggplot(SimData, aes(AcquiredTime, MassAccu, color=Precursor))+
 
 grid.arrange(g1,g2,g3,g4, ncol=2)
 
-
 #T2 control chart
 T2<-list()
-for (i in 1:nlevels(SimData$Precursor)){
-X<-scale(SimData[SimData$Precursor==levels(SimData$Precursor)[i],4:7])
+for (i in 1:nlevels(Data.set$peptide)){
+X<-scale(Data.set[Data.set$peptide==levels(Data.set$peptide)[i],3:6])
 Ti<-mqcc(X[1:25,], type = "T2", newdata = X[1:50,], pred.limits = FALSE)
 T2[[i]]<-Ti$newstats
 for (j in 1:50) {if (T2[[i]][j]>Ti$limits[2]) {T2[[i]][j]<-T2[[i]][j]}}

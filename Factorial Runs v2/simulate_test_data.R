@@ -12,7 +12,7 @@
   source("auto_add_features.R")
   source("robust_scaling.R")
   
-  beta=+4
+  beta=-4
   sim.size=25
   
   sample_density_sim <- function(guide.set, peptide, n){
@@ -64,7 +64,7 @@
   }
   as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
   
-  for(j in 6:8){
+  for(j in 6:6){
     Data<-c()
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
@@ -82,6 +82,53 @@
     Data1[[j]]<-Data
   }
   
+  for(j in 7:8){
+    Data<-c()
+    beta=runif(sim.size,1,3)
+    for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
+    sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
+    for(i in 1:sim.size){
+      Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
+                         sample_data[i,1]+ beta[i]*mad(sample_data[,1]),
+                         sample_data[i,2],
+                         sample_data[i,3],
+                         sample_data[i,4]))
+    }
+    Data<- as.data.frame(Data,stringsAsFactor = F)
+    colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
+    for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
+    RESPONSE<-c(rep("FAIL",sim.size))
+    Data<- cbind(Data,RESPONSE)
+    Data1[[j]]<-Data
+  }
+  
+  for(j in 8:8){
+    Data<-c()
+    beta=runif(sim.size,6,10)
+    for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
+    sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
+    for(i in 1:sim.size){
+      Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
+                         sample_data[i,1]+ beta[i]*mad(sample_data[,1]),
+                         sample_data[i,2],
+                         sample_data[i,3],
+                         sample_data[i,4]))
+    }
+    for(i in 15:20){
+      Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
+                         sample_data[i,1]+ 10*mad(sample_data[,1]),
+                         sample_data[i,2],
+                         sample_data[i,3],
+                         sample_data[i,4]))
+    }
+    Data<- as.data.frame(Data,stringsAsFactor = F)
+    colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
+    for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
+    RESPONSE<-c(rep("FAIL",sim.size))
+    Data<- cbind(Data,RESPONSE)
+    Data1[[j]]<-Data
+  }
+
   #Merge all types of disturbances + in-control observations
   for(j in 1:nlevels(guide.set$peptide)){
     Data.set[[j]]<-rbind(Data0[[j]], Data1[[j]])
@@ -97,6 +144,7 @@
  
   #Test.set<-Data.set
   
+  ###Figure1
   SimData<-data.frame(Data.set[,1:2], Annotations=NA, Data.set[,3:6])
   colnames(SimData)<-c("Run", "Precursor", "Annotations", "RetentionTime", "TotalArea", "FWHM", "MassAccuracy")
   
@@ -143,4 +191,3 @@
   
   MSstatsQC.ML.testR(Data.set[,1:6], guide.set)
   
-  write.csv(Data.set, "SimData.csv")
