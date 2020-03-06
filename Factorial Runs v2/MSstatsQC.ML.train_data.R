@@ -141,8 +141,9 @@ QcClassifier_data_linear <- function(data,nmetric,factor.names,sim.size,peptide.
         #change in a metric for some peptides
         if(factorial[i,j]== "1" & colnames(factorial[i,j])==colnames(sample_data_k)[j]){ 
           beta=runif(sim.size,L,U)
-          for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
-          sample_data_k[,j] <- sample_data_k[,j] + beta
+          beta=sort(beta)
+          #for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
+          sample_data_k[,j] <- sample_data_k[,j]-beta[sim.size-j+1]*mad(sample_data_k[,j])
           tag_neg <- 1 
           
         }# column ends 

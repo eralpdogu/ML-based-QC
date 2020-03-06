@@ -12,7 +12,7 @@
   source("auto_add_features.R")
   source("robust_scaling.R")
   
-  beta=-4
+  beta=2
   sim.size=25
   
   sample_density_sim <- function(guide.set, peptide, n){
@@ -66,12 +66,14 @@
   
   for(j in 6:6){
     Data<-c()
+    beta1=runif(sim.size,-5,-3)
+    for(k in 1:sim.size){beta1[k]=beta1[k]*(k-sim.size)/sim.size}
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
       Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
                          sample_data[i,1]+ beta*mad(sample_data[,1]),
                          sample_data[i,2],
-                         sample_data[i,3],
+                         sample_data[i,3]- beta1[sim.size-i+1]*mad(sample_data[,3]),
                          sample_data[i,4]))
     }
     Data<- as.data.frame(Data,stringsAsFactor = F)
@@ -89,7 +91,7 @@
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
       Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
-                         sample_data[i,1]+ beta[i]*mad(sample_data[,1]),
+                         sample_data[i,1]+beta[i]*mad(sample_data[,1]),
                          sample_data[i,2],
                          sample_data[i,3],
                          sample_data[i,4]))
@@ -104,23 +106,23 @@
   
   for(j in 8:8){
     Data<-c()
-    beta=runif(sim.size,6,10)
+    beta=runif(sim.size,-5,-3)
     for(k in 1:sim.size){beta[k]=beta[k]*(k-sim.size)/sim.size}
     sample_data <- sample_density_sim(guide.set,guide.set$peptide[j], sim.size)
     for(i in 1:sim.size){
       Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
-                         sample_data[i,1]+ beta[i]*mad(sample_data[,1]),
+                         sample_data[i,1]-beta[sim.size-i+1]*mad(sample_data[,1]),
                          sample_data[i,2],
-                         sample_data[i,3],
+                         sample_data[i,3]-beta[sim.size-i+1]*mad(sample_data[,3]),
                          sample_data[i,4]))
     }
-    for(i in 15:20){
-      Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
-                         sample_data[i,1]+ 10*mad(sample_data[,1]),
-                         sample_data[i,2],
-                         sample_data[i,3],
-                         sample_data[i,4]))
-    }
+    # for(i in 15:20){
+    #   Data<-rbind(Data,c((i+sim.size),rep(levels(guide.set$peptide)[j],1),
+    #                      sample_data[i,1]+ 10*mad(sample_data[,1]),
+    #                      sample_data[i,2],
+    #                      sample_data[i,3],
+    #                      sample_data[i,4]))
+    # }
     Data<- as.data.frame(Data,stringsAsFactor = F)
     colnames(Data)<-c("idfile", "peptide", colnames(sample_data))
     for (i in c(1,3:ncol(Data))){ Data[,i]<-as.numeric.factor(Data[,i])}
@@ -146,7 +148,7 @@
   
   ###Figure1
   SimData<-data.frame(Data.set[,1:2], Annotations=NA, Data.set[,3:6])
-  colnames(SimData)<-c("Run", "Precursor", "Annotations", "RetentionTime", "TotalArea", "FWHM", "MassAccuracy")
+  colnames(SimData)<-c("Run", "Precursor", "Annotations", "RetentionTime", "TotalArea", "MassAccuracy","FWHM")
   
   # Sim.set.scale <- SimData[SimData$Precursor==levels(SimData$Precursor)[1],c(4:ncol(SimData))]
   # for(k in 1:ncol(Sim.set.scale)){
@@ -171,7 +173,7 @@
   ggplot(SimData, aes(Run, RetentionTime)) + 
     geom_point(size = 0.5)+
     geom_line()+ 
-    #geom_smooth(method="lm", col="black")+
+    #geom_smooth(method="loess", col="black")+
     # geom_smooth(data=filter(Simdata_melt, 
     #                         Simdata_melt$variable == "RetentionTime"&Simdata_melt$Run>25), 
     #             aes(Run, value), method = "lm") +
@@ -180,6 +182,26 @@
     #geom_smooth(data=filter(Simdata_melt, Simdata_melt$variable == "RetentionTime"), 
     #            aes(Run, value), method="glm")+
     ylab("Retention Time")+
+    xlab("Time")+
+    facet_wrap(~Precursor,scales = "free", ncol = 4)+
+    scale_color_manual(values = c("#F0E442", "#0072B2", "#CC79A7", "#D55E00"))+
+    labs(color = "Metric")+
+    theme(legend.position="bottom", panel.background = element_blank(),
+          plot.background = element_blank(), plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"),
+          axis.ticks.length = unit(0, "pt"))
+  
+  ggplot(SimData, aes(Run, MassAccuracy)) + 
+    geom_point(size = 0.5)+
+    geom_line()+ 
+    #geom_smooth(method="loess", col="black")+
+    # geom_smooth(data=filter(Simdata_melt, 
+    #                         Simdata_melt$variable == "RetentionTime"&Simdata_melt$Run>25), 
+    #             aes(Run, value), method = "lm") +
+    #geom_point(data=filter(Simdata_melt, Simdata_melt$variable == "RetentionTime"), 
+    #           aes(Run, value))+
+    #geom_smooth(data=filter(Simdata_melt, Simdata_melt$variable == "RetentionTime"), 
+    #            aes(Run, value), method="glm")+
+    ylab("Mass Accuracy")+
     xlab("Time")+
     facet_wrap(~Precursor,scales = "free", ncol = 4)+
     scale_color_manual(values = c("#F0E442", "#0072B2", "#CC79A7", "#D55E00"))+

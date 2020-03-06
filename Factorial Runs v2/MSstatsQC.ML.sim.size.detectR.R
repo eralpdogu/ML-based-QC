@@ -21,7 +21,7 @@ MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
   source("MSstatsQC.ML.trainR.R")
   source("MSstatsQC.ML.train_data.R") 
   
-  sequence<-seq(sim.start, sim.end, 50)
+  sequence<-seq(sim.start, sim.end, 100)
   results<-matrix(NA, 100000, 4)
   for(i in sequence){
     rf_model<-MSstatsQC.ML.trainR(guide.set, i, guide.set.annotations = NULL)
@@ -46,5 +46,5 @@ MSstatsQC.ML.sim.size.detectR<-function(guide.set, sim.start, sim.end){
           axis.text.x = element_text(angle=45, hjust=1))
 }
 
-MSstatsQC.ML.sim.size.detectR(guide.set, 10, 1000)
+MSstatsQC.ML.sim.size.detectR(guide.set, sim.start=10, sim.end=2500)
 

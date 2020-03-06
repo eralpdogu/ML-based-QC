@@ -84,8 +84,8 @@
       scale_y_discrete(expand=c(0,0))+
       scale_fill_gradient(low = "white",
                           high = "darkorange", 
-                          #limits=c(-10, 50),
-                          #breaks=c(0,20,50),
+                          limits=c(-15, 100),
+                          #breaks=c(0,50,100),
                           name = "Standardized and\nengineered feature values")+
       ggtitle(label = levels(Test.set$peptide)[i])+
       theme(legend.title=element_text(size=8), legend.key.size = unit(0.5, "cm"), 
